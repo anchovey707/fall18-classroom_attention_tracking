@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2027
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TobiiForm", "TobiiForm\TobiiForm.csproj", "{AF573253-BED9-4A49-B5CE-5DE6B6A3CB4C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		DefaultBuild|Any CPU = DefaultBuild|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AF573253-BED9-4A49-B5CE-5DE6B6A3CB4C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF573253-BED9-4A49-B5CE-5DE6B6A3CB4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF573253-BED9-4A49-B5CE-5DE6B6A3CB4C}.DefaultBuild|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF573253-BED9-4A49-B5CE-5DE6B6A3CB4C}.DefaultBuild|Any CPU.Build.0 = Debug|Any CPU
+		{AF573253-BED9-4A49-B5CE-5DE6B6A3CB4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF573253-BED9-4A49-B5CE-5DE6B6A3CB4C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {54626BAE-719F-4103-BD13-48047A810A2C}
+	EndGlobalSection
+EndGlobal
