@@ -43,6 +43,7 @@ namespace TeacherGUI
             }
         }
 
+        //when form is loaded
         private void Login_Screen_Load(object sender, EventArgs e)
         {
             /*g.clientSocket.Connect("10.40.43.43", 61600);
