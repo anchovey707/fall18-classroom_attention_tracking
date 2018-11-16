@@ -25,7 +25,7 @@ namespace TeacherGUI
         {
             InitializeComponent();
             admin = a;
-
+            Console.WriteLine("Admin="+admin);
         }
         
 
