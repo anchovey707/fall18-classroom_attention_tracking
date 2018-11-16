@@ -12,46 +12,20 @@ using System.Windows.Forms;
 
 namespace TeacherGUI
 {
-
-    
-
     public partial class TeacherHome : Form
     {
-        
-
-
 
         public TeacherHome()
         {
             InitializeComponent();
-
-
         }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            new Login_Screen().Show();
-            Hide();
-        }
-
-        private void button3_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        //Redesign so that the teacher selects the class they currently want to stream and then start said streaming on click
-        //use this to send the course that the teacher selects to the Server and wait to receive the port number that the udp stream will come in on
-        /*g.outStream = Encoding.ASCII.GetBytes(usernameTextBox.Text + "#" + passwordTextBox.Text);
-            g.serverStream.Write(g.outStream, 0, g.outStream.Length);
-            g.serverStream.Flush();
-        */
-        //Change udpListener port to the current class port as received on the TCP connection
+    
         private void CurrentClass_Click(object sender, EventArgs e)
         {
             Form form; 
             try
             {
-                form= new Form1(int.Parse(selectedClass.Text));
+                form = new Form1(int.Parse(selectedClass.Text));
             }
             catch(Exception ea)
             {

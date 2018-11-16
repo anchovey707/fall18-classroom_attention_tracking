@@ -12,11 +12,9 @@ namespace TeacherGUI
 {
     public partial class Form1 : Form
     {
-        //static TcpClient clientSocket = new TcpClient();
         Socket clientSocket;
         byte[] outStream;
         byte[] inStream;
-        UdpClient listener;
         public Socket udpsock;
 
         public Form1(int course)
@@ -190,46 +188,7 @@ namespace TeacherGUI
         
         private void button2_Click(object sender, EventArgs e)
         {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            /*
-            // Create new memory bitmap the same size as the picture box
-            Bitmap bMap = new Bitmap(pictureBox1.Width, pictureBox1.Height);
-            // Initialize random number generator
-            Random rRand = new Random();
-            // Loop variables
-            int iX;
-            int iY;
-            byte iIntense;
-            // Lets loop 500 times and create a random point each iteration
-            for (int i = 0; i < 500; i++)
-            {
-                // Pick random locations and intensity
-                iX = rRand.Next(0, 200);
-                iY = rRand.Next(0, 200);
-                iIntense = (byte)rRand.Next(0, 120);
-                // Add heat point to heat points list
-                HeatPoints.Add(new HeatPoint(iX, iY, iIntense));
-            }
-            // Call CreateIntensityMask, give it the memory bitmap, and use it's output to set the picture box image
-            pictureBox1.Image = CreateIntensityMask(bMap, HeatPoints);
-            */
+            
         }
         private Bitmap CreateIntensityMask(Bitmap bSurface, List<HeatPoint> aHeatPoints)
         {

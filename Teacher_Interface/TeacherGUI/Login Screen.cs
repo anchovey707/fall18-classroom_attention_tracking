@@ -9,9 +9,6 @@ namespace TeacherGUI
     public partial class Login_Screen : Form
     {
         
-        //serverAddress = "127.0.0.0";
-        //port = "8888";
-        
         public Login_Screen()
         {
             InitializeComponent();
@@ -46,14 +43,7 @@ namespace TeacherGUI
 
         private void Login_Screen_Load(object sender, EventArgs e)
         {
-            /*g.clientSocket.Connect("10.40.43.43", 61600);
-            g.serverStream.Read(g.inStream, 0, (int)g.clientSocket.ReceiveBufferSize);
-            string returndata = Encoding.ASCII.GetString(g.inStream);
-            if (returndata == ";")
-            {
-                Console.WriteLine("hello");
-            }*/
-
+            
             //Username textbox
             usernameTextBox.Enter += new EventHandler(username_Enter);
             usernameTextBox.Leave += new EventHandler(username_Leave);

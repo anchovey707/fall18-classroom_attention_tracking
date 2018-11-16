@@ -6,9 +6,9 @@ namespace TeacherGUI
 {
     public class databaseController
     {
-        public static String databaseIP = "192.168.231.1";
+        public static String databaseIP = "10.40.51.151";
         public static String databaseUser = "admin";
-        public static String databasePass = "pass";
+        public static String databasePass = "aannt707";
         public static String databaseName = "attentionTracking";
         public static String sqlQuery;
         public static MySqlConnection conn = new MySql.Data.MySqlClient.MySqlConnection();
