@@ -17,27 +17,17 @@ namespace TeacherGUI
 
     public partial class TeacherHome : Form
     {
-        
+        private bool admin = false;
 
 
 
-        public TeacherHome()
+        public TeacherHome(bool a)
         {
             InitializeComponent();
-
-
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            new Login_Screen().Show();
-            Hide();
-        }
-
-        private void button3_Click(object sender, EventArgs e)
-        {
+            admin = a;
 
         }
+        
 
         //Redesign so that the teacher selects the class they currently want to stream and then start said streaming on click
         //use this to send the course that the teacher selects to the Server and wait to receive the port number that the udp stream will come in on

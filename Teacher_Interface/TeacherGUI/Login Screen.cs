@@ -31,11 +31,10 @@ namespace TeacherGUI
 
             MySqlDataReader reader = cmd.ExecuteReader();
 
-            if (reader.HasRows)
-            {
+            if (reader.HasRows){
                 databaseController.conn.Close();
-                Hide();
-                new TeacherHome().Show();
+                new TeacherHome(reader.GetBoolean("administrator")).Show();
+                this.Close();
             }
             else
             {
