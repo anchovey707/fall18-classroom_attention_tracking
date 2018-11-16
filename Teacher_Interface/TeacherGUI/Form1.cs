@@ -32,7 +32,7 @@ namespace TeacherGUI
                 outStream = new byte[10025];
 
                 Console.WriteLine("trying to connect");
-                clientSocket.Connect("10.40.45.58", 61600);
+                clientSocket.Connect(databaseController.databaseIP, 61600);
 
                Console.WriteLine("waiting for starting char");
                 String returndata="";
@@ -186,6 +186,7 @@ namespace TeacherGUI
             this.Close();
         }
         private void Form1_FormClosing(object sender, FormClosingEventArgs e) {
+            //need to stop thread as well
             teacherHome.Show();
         }
         private List<HeatPoint> HeatPoints = new List<HeatPoint>();
