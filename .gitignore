@@ -23,7 +23,10 @@ bld/
 [Ll]og/
 
 # Visual Studio 2015 cache/options directory
-.vs/
+*.vs/
+vs/slnx.sqlite
+vs/NewRepo/v15
+vs/
 # Uncomment if you have tasks that create the project's static files in wwwroot
 #wwwroot/
 
