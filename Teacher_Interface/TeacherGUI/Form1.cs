@@ -27,59 +27,45 @@ namespace TeacherGUI
 
                 outStream = new byte[10025];
 
-                Console.WriteLine("trying to connect");
                 clientSocket.Connect("10.40.45.58", 61600);
 
-               Console.WriteLine("waiting for starting char");
-                String returndata="";
-
+                String returndata = "";
 
                 //Wait for the start char, ';'
-                while (returndata != ";") {
-                    inStream=new byte[clientSocket.Available];
+                while (returndata != ";")
+                {
+                    inStream = new byte[clientSocket.Available];
                     clientSocket.Receive(inStream);
                     returndata = Encoding.ASCII.GetString(inStream);
-                    Console.WriteLine("'"+returndata+"'");
                 }
-                Console.WriteLine("got start char");
+
                 outStream = Encoding.ASCII.GetBytes("#" + Environment.UserName + "#" + course + ";");
+
                 //send my name and corse that I want to stream
                 clientSocket.Send(outStream);
-                Console.WriteLine("waiting for port info");
+
                 //wait for port
                 inStream = new byte[0];
-                returndata ="";
-                while (!returndata.Contains(";")) {
+                returndata = "";
+                while (!returndata.Contains(";"))
+                {
                     inStream = new byte[clientSocket.Available];
                     clientSocket.Receive(inStream);
                     returndata += Encoding.ASCII.GetString(inStream);
                 }
-                Console.WriteLine("got data="+returndata);
-                Console.WriteLine(returndata.IndexOf(":"));
-                Console.WriteLine(returndata.Length);
 
-                Console.WriteLine("port=" + returndata.Substring(returndata.IndexOf(":") + 1,returndata.Length -returndata.IndexOf(":")-2));
                 returndata = returndata.Substring(returndata.IndexOf(":") + 1, returndata.Length - returndata.IndexOf(":") - 2);
 
+                udpsock.Bind(new IPEndPoint(IPAddress.Any, int.Parse(returndata)));
 
-                udpsock.Bind(new IPEndPoint(IPAddress.Any,int.Parse(returndata)));
-                Console.WriteLine("Starting UDP");
                 ThreadStart childref = new ThreadStart(ListenForPackets);
                 Thread childThread = new Thread(childref);
                 childThread.Start();
-                Console.WriteLine("Thread should have started");
             }
-            catch (Exception e){
+            catch (Exception e)
+            {
                 please.Text = e.StackTrace;
-                Console.WriteLine(e.StackTrace);
             }
-
-
-
-
-            // Set the view to show details.
-
-
             // Create new memory bitmap the same size as the picture box
             Bitmap bMap = new Bitmap(pictureBox1.Width, pictureBox1.Height);
             // Initialize random number generator
@@ -100,21 +86,12 @@ namespace TeacherGUI
             }
             // Call CreateIntensityMask, give it the memory bitmap, and use it's output to set the picture box image
             pictureBox1.Image = CreateIntensityMask(bMap, HeatPoints);
-
-
-
+            
             listView1.View = View.Details;
             listView1.CheckBoxes = true;
             // Display grid lines.
             listView1.GridLines = true;
-           // listView2.View = View.Details;
 
-           // listView2.CheckBoxes = true;
-
-            // Display grid lines.
-           // listView2.GridLines = true;
-
-            // Create three items and three sets of subitems for each item.
             ListViewItem item1 = new ListViewItem("Austin Lambeth",0);
             item1.SubItems.Add("al05661");
             item1.SubItems.Add("Current Slides");

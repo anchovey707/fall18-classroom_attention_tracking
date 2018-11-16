@@ -40,7 +40,7 @@ namespace TeacherGUI
                 databaseController.conn.Close();
             }
         }
-
+        //when form is loaded
         private void Login_Screen_Load(object sender, EventArgs e)
         {
             
