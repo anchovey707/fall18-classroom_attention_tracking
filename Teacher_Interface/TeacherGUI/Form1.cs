@@ -24,7 +24,7 @@ namespace TeacherGUI
         {
             teacherHome = f;
             InitializeComponent();
-            /*try
+            try
             {
                 clientSocket = new Socket(SocketType.Stream, ProtocolType.Tcp);
                 udpsock = new Socket(SocketType.Dgram, ProtocolType.Udp);
@@ -76,7 +76,7 @@ namespace TeacherGUI
             catch (Exception e){
                 please.Text = e.StackTrace;
                 Console.WriteLine(e.StackTrace);
-            }*/
+            }
 
 
 
