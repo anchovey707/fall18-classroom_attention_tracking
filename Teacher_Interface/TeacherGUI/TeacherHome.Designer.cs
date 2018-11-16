@@ -31,8 +31,8 @@
             this.label1 = new System.Windows.Forms.Label();
             this.button2 = new System.Windows.Forms.Button();
             this.CurrentClass = new System.Windows.Forms.Button();
-            this.selectedClass = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
+            this.selectedClass = new System.Windows.Forms.ComboBox();
             this.SuspendLayout();
             // 
             // label1
@@ -66,13 +66,6 @@
             this.CurrentClass.UseVisualStyleBackColor = true;
             this.CurrentClass.Click += new System.EventHandler(this.CurrentClass_Click);
             // 
-            // selectedClass
-            // 
-            this.selectedClass.Location = new System.Drawing.Point(144, 86);
-            this.selectedClass.Name = "selectedClass";
-            this.selectedClass.Size = new System.Drawing.Size(100, 20);
-            this.selectedClass.TabIndex = 5;
-            // 
             // label2
             // 
             this.label2.AutoSize = true;
@@ -82,19 +75,27 @@
             this.label2.TabIndex = 6;
             this.label2.Text = "Class:";
             // 
+            // selectedClass
+            // 
+            this.selectedClass.FormattingEnabled = true;
+            this.selectedClass.Location = new System.Drawing.Point(144, 86);
+            this.selectedClass.Name = "selectedClass";
+            this.selectedClass.Size = new System.Drawing.Size(121, 21);
+            this.selectedClass.TabIndex = 7;
+            // 
             // TeacherHome
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(358, 214);
-            this.Controls.Add(this.label2);
             this.Controls.Add(this.selectedClass);
+            this.Controls.Add(this.label2);
             this.Controls.Add(this.CurrentClass);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.label1);
             this.Name = "TeacherHome";
             this.Text = "TeacherHome";
-            this.Load += new System.EventHandler(this.TeacherHome_Load);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.TeacherHome_FormClosing);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -105,7 +106,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button CurrentClass;
-        private System.Windows.Forms.TextBox selectedClass;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.ComboBox selectedClass;
     }
 }

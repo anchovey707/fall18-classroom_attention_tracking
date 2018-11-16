@@ -18,11 +18,13 @@ namespace TeacherGUI
         byte[] inStream;
         UdpClient listener;
         public Socket udpsock;
+        Form teacherHome;
 
-        public Form1(int course)
+        public Form1(Form f,int course)
         {
+            teacherHome = f;
             InitializeComponent();
-            try
+            /*try
             {
                 clientSocket = new Socket(SocketType.Stream, ProtocolType.Tcp);
                 udpsock = new Socket(SocketType.Dgram, ProtocolType.Udp);
@@ -74,7 +76,7 @@ namespace TeacherGUI
             catch (Exception e){
                 please.Text = e.StackTrace;
                 Console.WriteLine(e.StackTrace);
-            }
+            }*/
 
 
 
@@ -180,12 +182,12 @@ namespace TeacherGUI
 
         }
 
-        private void button1_Click(object sender, EventArgs e)
-        {
-            new TeacherHome(false).Show();
-            Hide();
+        private void button1_Click(object sender, EventArgs e){
+            this.Close();
         }
-
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e) {
+            teacherHome.Show();
+        }
         private List<HeatPoint> HeatPoints = new List<HeatPoint>();
         
         private void button2_Click(object sender, EventArgs e)

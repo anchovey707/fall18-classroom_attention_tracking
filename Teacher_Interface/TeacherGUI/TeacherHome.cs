@@ -19,13 +19,18 @@ namespace TeacherGUI
     {
         private bool admin = false;
 
-
-
-        public TeacherHome(bool a)
+        public TeacherHome(bool a, string[] classes)
         {
             InitializeComponent();
+            
             admin = a;
             Console.WriteLine("Admin="+admin);
+            for(int i = 0; i < classes.Length; i++) {
+                Console.WriteLine(classes[i]);
+            }
+            selectedClass.Items.AddRange(classes);
+            if(classes.Length>0)
+               selectedClass.Text = classes[0];
         }
         
 
@@ -41,11 +46,11 @@ namespace TeacherGUI
             Form form; 
             try
             {
-                form= new Form1(int.Parse(selectedClass.Text));
+                form= new Form1(this,int.Parse(selectedClass.Text));
             }
             catch(Exception ea)
             {
-                form = new Form1(1234);
+                form = new Form1(this,12345);
             }
             form.Show();
             Hide();
@@ -56,10 +61,11 @@ namespace TeacherGUI
             new Historic_Data().Show();
             Hide();
         }
+        
+        
 
-        private void TeacherHome_Load(object sender, EventArgs e)
-        {
-
+        private void TeacherHome_FormClosing(object sender, FormClosingEventArgs e) {
+            Application.Exit();
         }
     }
 }

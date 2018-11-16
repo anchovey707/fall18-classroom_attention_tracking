@@ -8,10 +8,7 @@ namespace TeacherGUI
 
     public partial class Login_Screen : Form
     {
-        
-        //serverAddress = "127.0.0.0";
-        //port = "8888";
-        
+        databaseController DB = new databaseController();
         public Login_Screen()
         {
             InitializeComponent();
@@ -20,40 +17,48 @@ namespace TeacherGUI
         //loginButton
         private void button1_Click(object sender, EventArgs e)
         {
-            databaseController.dbConnect();
-            databaseController.sqlQuery = "SELECT * FROM teacher WHERE login_id = @username && pass = @pass;";
-            MySqlCommand cmd = new MySqlCommand(databaseController.sqlQuery, databaseController.conn);
+            
 
+            /*
+                databaseController.sqlQuery = "SELECT * FROM teacher WHERE login_id = @username && pass = @pass;";
+            MySqlCommand cmd = new MySqlCommand(databaseController.sqlQuery, databaseController.conn);
             string passwordHash = passwordTextBox.Text;
             //string passwordHash = Hash.passwordHash(passwordTextBox.Text);
-            cmd.Parameters.AddWithValue("@username", usernameTextBox.Text);
-            cmd.Parameters.AddWithValue("@pass", passwordHash);
-
+            //cmd.Parameters.AddWithValue("@username", );
+            //cmd.Parameters.AddWithValue("@pass", );
+            databaseController.login(usernameTextBox.Text, passwordHash);
             MySqlDataReader reader = cmd.ExecuteReader();
 
-            if (reader.HasRows){
+            if (reader.HasRows)
+            {
                 reader.Read();
-                new TeacherHome(reader.GetBoolean("administrator")).Show();
+                bool admin = reader.GetBoolean("administrator");
+                string id = reader.GetString(1);
+                Console.WriteLine(id);
+                cmd = new MySqlCommand("Select * from course where teacher_id=" + id + ";", databaseController.conn);
+                reader = cmd.ExecuteReader();
+
+                new TeacherHome(admin, classes).Show();
                 databaseController.conn.Close();
                 this.Hide();
-            }
-            else
-            {
-                MessageBox.Show("Either your username or password was incorrect. Please try again.");
+            }*/
+            
+            if (DB.login(usernameTextBox.Text, passwordTextBox.Text,false)) {
+                new TeacherHome(DB.isAdmin(), DB.getClasses()).Show();
                 databaseController.conn.Close();
+                this.Hide();
+            }else{
+                MessageBox.Show("Either your username or password was incorrect. Please try again.");
+                //databaseController.conn.Close();
             }
+            
+            
+
+                
         }
 
         private void Login_Screen_Load(object sender, EventArgs e)
         {
-            /*g.clientSocket.Connect("10.40.43.43", 61600);
-            g.serverStream.Read(g.inStream, 0, (int)g.clientSocket.ReceiveBufferSize);
-            string returndata = Encoding.ASCII.GetString(g.inStream);
-            if (returndata == ";")
-            {
-                Console.WriteLine("hello");
-            }*/
-
             //Username textbox
             usernameTextBox.Enter += new EventHandler(username_Enter);
             usernameTextBox.Leave += new EventHandler(username_Leave);
