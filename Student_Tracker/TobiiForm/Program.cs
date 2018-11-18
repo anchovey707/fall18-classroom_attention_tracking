@@ -7,6 +7,7 @@ using System.Diagnostics;
 using Tobii.Research;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using System.IO;
 
 namespace TobiiForm
 {
@@ -14,26 +15,25 @@ namespace TobiiForm
     {
         private static Form1 current;
 
+
+        
+
+
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
-        {
-            Debug.WriteLine("Started!");
+        static void Main(){
             //file.AutoFlush = true;
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            current = new Form1();
+
+            
 
 
-            Debug.WriteLine("current new form");
-            current = new Form1{    
-                StartPosition = FormStartPosition.Manual
-            };
             Debug.WriteLine("Trying to run App");
             Application.Run(current);
-
-
         }
 
         

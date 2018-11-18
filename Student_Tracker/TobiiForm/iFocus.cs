@@ -70,9 +70,10 @@ namespace TobiiForm
             currentData = "";
             jSonArray = new List<JsonObject>();
             // Start listening to gaze data.
+            System.Threading.Thread.Sleep(1000);
             eyeTracker.GazeDataReceived += EyeTracker_GazeDataReceived;
             // Wait for some data to be received.
-            System.Threading.Thread.Sleep(1000);
+            System.Threading.Thread.Sleep(250);
             // Stop listening to gaze data.
             eyeTracker.GazeDataReceived -= EyeTracker_GazeDataReceived;
             //Debug.WriteLine(ByteCount);

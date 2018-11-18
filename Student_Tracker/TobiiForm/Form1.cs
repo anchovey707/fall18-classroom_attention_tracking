@@ -35,13 +35,14 @@ namespace TobiiForm
 
         public Form1()
         {
-            Debug.WriteLine("Form1");
-            Init();
+            Debug.WriteLine("Form1 init");
+            Init2();
             InitializeComponent();
+            Debug.WriteLine("spawning thread");
             SpawnThread();
         }
 
-        private void Init()
+        /*private void Init()
         {
             Debug.WriteLine("Init");
             //adminLogin = validUserCheck.DetermineAdminLogin();//if Admin set adminLogin to true, skip further checks
@@ -61,7 +62,7 @@ namespace TobiiForm
             tracker = new iFocus(globalFileStream);
 
             //initialize serverConnector and determines if valid
-            //serverConnector = new ServerConnection(globalFileStream);
+            serverConnector = new ServerConnection(globalFileStream);
             //Handles Validation in ServerConnection need this after establish connection to get day/time
             if (!adminLogin) serverConnector.valid.ValidateUserBasedOnDaysTimes(serverConnector.Timestamp,serverConnector);
             
@@ -71,9 +72,16 @@ namespace TobiiForm
             this.Location = p;
 
             Debug.WriteLine("Init End");
-        }
+        }*/
    
-
+        private void Init2() {
+            //String systemFileLocation = "D:\\Users\\" + Environment.UserName + "\\Desktop\\eyes";
+            String systemFileLocation = "D:\\Desktop\\eyes";
+            globalFileStream = new FileStream(systemFileLocation, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+            tracker = new iFocus(globalFileStream);
+            serverConnector = new ServerConnection(globalFileStream);
+            iFocus.GetOpenWindows();
+        }
         
        
         // Will eventually move this thread spawn to a new thread class 
@@ -89,8 +97,9 @@ namespace TobiiForm
             while (true)
             {//Add this note to change log
                 tracker.GazeData(tracker.Tracker);// want to still collect if server connection not made
-                                                  //serverConnector.SendDataToServer(tracker.ByteCount); // next successful server connection we dump data that was not originally sent
+                serverConnector.SendDataToServer(tracker.ByteCount); // next successful server connection we dump data that was not originally sent
                 Debug.WriteLine(tracker.ByteCount);
+                Application.Exit();
             }
         }
         
@@ -104,7 +113,7 @@ namespace TobiiForm
             try
             {
                 logger.Info("User has properly logged off " + DateTime.Now + "\n");
-                serverConnector.TerminateProtocol();
+                //serverConnector.TerminateProtocol();
             }
             catch
             {
