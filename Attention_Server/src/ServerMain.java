@@ -35,17 +35,18 @@ public class ServerMain {
 			//Getting database connection
 			
 			try{
-				conn=DriverManager.getConnection("jdbc:mysql://localhost:3306/attentiontracking","root","aannt707");
+				DriverManager.registerDriver(new com.mysql.jdbc.Driver());
+				conn=DriverManager.getConnection("jdbc:mysql://localhost:3306/attentiontracking","teacher","course");
 				database=true;
-			}catch(Exception e) {
+			}catch(SQLException e) {
 				System.out.println("!!!!!Couldn't connect to database!!!!!");
+				e.printStackTrace();
 			}
 			
 			//Server running
 			while(true) {
 				
 				try{
-					
 					System.out.println("Waiting for new connection");
 					ClientConnection client = new ClientConnection(service.accept());
 					client.start();
@@ -58,7 +59,6 @@ public class ServerMain {
 						updSockets.add(UDPSocket);
 						new Thread(UDPSocket).start();
 						client.updatePort(basePort+UDPPortCount);
-						//still need to tell teacher what port
 		
 						UDPPortCount++;
 						System.out.println("Students changed="+updateStudents());
@@ -146,8 +146,8 @@ public class ServerMain {
 		if(database) {
 			System.out.println("Getting "+student.getUser()+"'s classes");
 			try {
-				ResultSet courses = retrieve("Select course_crn from courses join users_courses" + 
-					" where course_id=courses.id and users_courses.user_id='"+student.getUser()+"';");
+				ResultSet courses = retrieve("Select course.crn from course join student_courses" + 
+					" where course.crn=student_courses.crn and student_courses.student_id='"+student.getUser()+"';");
 				while(courses.next()) {
 					System.out.println(courses.getInt(1));
 					student.setCourse(courses.getInt(1));	
