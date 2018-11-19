@@ -9,7 +9,7 @@ public class ClientConnection extends Thread{
 	int course=1234,port=61600;
 	boolean ready=false,isTeacher=false;
 	//timing and heartbeat
-	int TCPTiming=500,heartbeatMax=20,heartbeat=heartbeatMax;
+	int TCPTiming=500,heartbeatMax=10,heartbeat=heartbeatMax;
 	
 	//TCP connection
 	Socket socket;
@@ -115,7 +115,6 @@ public class ClientConnection extends Thread{
 					heartbeat=heartbeatMax;
 					inputStream.readByte();
 				}
-				heartbeat=heartbeatMax;
 				if(heartbeat--<=0)
 					ready=false;
 				
