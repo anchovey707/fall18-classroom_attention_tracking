@@ -8,10 +8,10 @@ namespace TeacherGUI
     public class databaseController
     {
         //probably need to pull this ip from a external config file thats eaasy to change
-        public static String databaseIP = "192.168.0.99";
+        public static String databaseIP = "192.168.0.54";
         public static String databaseUser = "teacher";
         public static String databasePass = "course";
-        public static String databaseName = "attentionTracking";
+        public static String databaseName = "attentiontracking";
         public static String sqlQuery;
         public static MySqlConnection conn = new MySql.Data.MySqlClient.MySqlConnection();
    
@@ -42,15 +42,19 @@ namespace TeacherGUI
             if(hash)
                 pass = Hash.passwordHash(pass);
             Console.WriteLine(pass);
-            MySqlDataReader reader = new MySqlCommand("SELECT * FROM teacher WHERE login_id = '" + user + "' and pass = '" + pass + "';", databaseController.conn).ExecuteReader();
-            if (reader.HasRows){
-                reader.Read();
-                admin = reader.GetBoolean("administrator");
-                id = reader.GetString("login_id");
-                reader.Close();
-                return true;
-            }else{
-                reader.Close();
+            try {
+                MySqlDataReader reader = new MySqlCommand("SELECT * FROM teacher WHERE login_id = '" + user + "' and pass = '" + pass + "';", databaseController.conn).ExecuteReader();
+                if (reader.HasRows) {
+                    reader.Read();
+                    admin = reader.GetBoolean("administrator");
+                    id = reader.GetString("login_id");
+                    reader.Close();
+                    return true;
+                } else {
+                    reader.Close();
+                    return false;
+                }
+            }catch(Exception e) {
                 return false;
             }
         }
@@ -60,11 +64,16 @@ namespace TeacherGUI
 
         public string[] getClasses(){
             List<string> classlist = new List<string>();
-            MySqlDataReader reader = new MySqlCommand("SELECT crn FROM course WHERE teacher_id = '" + id + "';", databaseController.conn).ExecuteReader();
-            while (reader.Read()) {
-                classlist.Add(reader.GetString("crn"));
+            try {
+                MySqlDataReader reader = new MySqlCommand("SELECT crn FROM course WHERE teacher_id = '" + id + "';", databaseController.conn).ExecuteReader();
+                while (reader.Read()) {
+                    classlist.Add(reader.GetString("crn"));
+                }
+                reader.Close();
+                return classlist.ToArray();
+            } catch (Exception e) {
+                classlist.Add("82325");
             }
-            reader.Close();
             return classlist.ToArray();
         }
 

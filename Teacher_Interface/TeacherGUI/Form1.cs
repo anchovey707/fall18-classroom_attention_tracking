@@ -19,6 +19,7 @@ namespace TeacherGUI
         UdpClient listener;
         public Socket udpsock;
         Form teacherHome;
+        Thread childThread;
 
         public Form1(Form f,int course)
         {
@@ -69,7 +70,7 @@ namespace TeacherGUI
                 udpsock.Bind(new IPEndPoint(IPAddress.Any,int.Parse(returndata)));
                 Console.WriteLine("Starting UDP");
                 ThreadStart childref = new ThreadStart(ListenForPackets);
-                Thread childThread = new Thread(childref);
+                childThread = new Thread(childref);
                 childThread.Start();
                 Console.WriteLine("Thread should have started");
             }
@@ -154,7 +155,7 @@ namespace TeacherGUI
         {
             while (true)
             {
-                //Console.WriteLine("Im in boss");
+                //Console.WriteLine("Listening for next packet");
                 if (udpsock.Available > 0)
                 {
                     inStream = new byte[udpsock.Available];
@@ -162,9 +163,7 @@ namespace TeacherGUI
                     udpsock.Receive(inStream);
                     Console.WriteLine("Packet=" + Encoding.ASCII.GetString(inStream));
                 }
-                
             }
-            
         }
 
         private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
@@ -183,6 +182,7 @@ namespace TeacherGUI
         }
 
         private void button1_Click(object sender, EventArgs e){
+            childThread.Abort();
             this.Close();
         }
         private void Form1_FormClosing(object sender, FormClosingEventArgs e) {

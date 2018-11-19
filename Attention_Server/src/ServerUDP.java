@@ -9,7 +9,7 @@ import java.net.SocketException;
 import java.util.Random;
 
 public class ServerUDP implements Runnable{
-	byte[] streambuffer = new byte[65536];
+	byte[] streambuffer = new byte[5000];
     DatagramSocket streamSocket;
     DatagramPacket streamPacket;
 	DataInputStream inputStream;
@@ -35,25 +35,24 @@ public class ServerUDP implements Runnable{
 			Random rand = new Random();
 			int packets=0;
 			while(++packets>0) {
-				streamSocket.receive(streamPacket);
-				//recievedBytes=new byte[streamPacket.getLength()];
-				//System.arraycopy(streamPacket.getData(), streamPacket.getOffset(),recievedBytes,0,streamPacket.getLength());;
+				try{
+					streamSocket.receive(streamPacket);
+					//recievedBytes = streamPacket.getData();
 				
-				recievedBytes = streamPacket.getData();
-				
-				recievedString=new String(recievedBytes,0,streamPacket.getLength());
-				System.out.println(recievedString);
-				//System.out.println("\tfrom:"+streamPacket.getAddress().getHostAddress());
-				//+": "+recievedString
-					//				+"\n\tto "+ip);
+					//recievedString=new String(recievedBytes,0,streamPacket.getLength());
+					recievedString=new String(streamPacket.getData(),streamPacket.getOffset(),streamPacket.getLength());				
+					//System.out.println(recievedString);
+					recievedBytes=recievedString.getBytes();
+					//System.out.println("sending "+recievedBytes.length+" bytes to "+ip);
 
 				
-				streamSocket.send(new DatagramPacket(recievedBytes , recievedBytes.length,ip,streamSocket.getLocalPort()));
-				writer.write("\n"+recievedString);
-				writer.flush();
-				try{
-				//Thread.sleep(350);
+					streamSocket.send(new DatagramPacket(recievedBytes , recievedBytes.length,ip,streamSocket.getLocalPort()));
+					//writer.write("\n"+recievedString);
+					//writer.flush();
+				
 				}catch(Exception e){
+					System.out.println("ServerUDP ERROR");
+					e.printStackTrace();
 				}
 				
 			}

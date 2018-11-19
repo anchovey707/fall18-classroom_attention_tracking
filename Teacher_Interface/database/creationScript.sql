@@ -7,7 +7,7 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,N
 -- -----------------------------------------------------
 -- Schema attentiontracking
 -- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `attentiontracking` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci ;
+CREATE SCHEMA IF NOT EXISTS `attentiontracking` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ;
 USE `attentiontracking` ;
 
 -- -----------------------------------------------------
@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS `attentiontracking`.`teacher` (
   PRIMARY KEY (`login_id`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+COLLATE = utf8mb4_general_ci;
 
 -- -----------------------------------------------------
 -- Table `attentiontracking`.`course`
@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS `attentiontracking`.`course` (
   `startTime` TIME NULL DEFAULT NULL,
   `endTime` TIME NOT NULL,
   PRIMARY KEY (`crn`),
-  INDEX `fk_teid` (`teacher_id` ASC) VISIBLE,
+  INDEX `fk_teid` (`teacher_id` ASC),
   CONSTRAINT `fk_teid`
     FOREIGN KEY (`teacher_id`)
     REFERENCES `attentiontracking`.`teacher` (`login_id`)
@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS `attentiontracking`.`course` (
     ON UPDATE CASCADE)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+COLLATE = utf8mb4_general_ci;
 
 -- -----------------------------------------------------
 -- Table `attentiontracking`.`student`
@@ -60,18 +60,18 @@ CREATE TABLE IF NOT EXISTS `attentiontracking`.`student` (
   PRIMARY KEY (`login_id`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+COLLATE = utf8mb4_general_ci;
 
 -- -----------------------------------------------------
 -- Table `attentiontracking`.`student_courses`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `attentiontracking`.`student_courses` ;
+DROP TABLE IF EXISTS `attentiontracking`.`student_course` ;
 
-CREATE TABLE IF NOT EXISTS `attentiontracking`.`student_courses` (
+CREATE TABLE IF NOT EXISTS `attentiontracking`.`student_course` (
   `crn` INT(7) NOT NULL,
   `student_id` VARCHAR(32) NOT NULL,
-  INDEX `fk_stcrn` (`crn` ASC) VISIBLE,
-  INDEX `fk_ststid` (`student_id` ASC) VISIBLE,
+  INDEX `fk_stcrn` (`crn` ASC),
+  INDEX `fk_ststid` (`student_id` ASC),
   CONSTRAINT `fk_stcrn`
     FOREIGN KEY (`crn`)
     REFERENCES `attentiontracking`.`course` (`crn`)
@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS `attentiontracking`.`student_courses` (
     ON UPDATE CASCADE)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+COLLATE = utf8mb4_general_ci;
 
 -- -----------------------------------------------------
 -- Table `attentiontracking`.`trackingdata`
@@ -98,8 +98,8 @@ CREATE TABLE IF NOT EXISTS `attentiontracking`.`trackingdata` (
   `y` FLOAT NULL DEFAULT NULL,
   `openApplication` VARCHAR(255) NULL DEFAULT NULL,
   `dataTimestamp` DATETIME NOT NULL,
-  INDEX `fk_trcrn` (`crn` ASC) VISIBLE,
-  INDEX `fk_trid` (`student_id` ASC) VISIBLE,
+  INDEX `fk_trcrn` (`crn` ASC) ,
+  INDEX `fk_trid` (`student_id` ASC) ,
   CONSTRAINT `fk_trcrn`
     FOREIGN KEY (`crn`)
     REFERENCES `attentiontracking`.`course` (`crn`)
@@ -112,13 +112,15 @@ CREATE TABLE IF NOT EXISTS `attentiontracking`.`trackingdata` (
     ON UPDATE CASCADE)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+COLLATE = utf8mb4_general_ci;
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 
 #Create user to
+drop user teacher@'%';
+Flush privileges;
 Create user 'teacher'@'%' identified by 'course';
 Grant All ON attentiontracking.* to 'teacher'@'%';
 
