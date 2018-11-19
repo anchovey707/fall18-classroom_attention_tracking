@@ -39,7 +39,7 @@ namespace TobiiForm
             Init2();
             InitializeComponent();
             Debug.WriteLine("spawning thread");
-            SpawnThread();
+            //SpawnThread();
         }
 
         /*private void Init()
@@ -76,10 +76,10 @@ namespace TobiiForm
    
         private void Init2() {
             //String systemFileLocation = "D:\\Users\\" + Environment.UserName + "\\Desktop\\eyes";
-            String systemFileLocation = "D:\\Desktop\\eyes";
+            String systemFileLocation = "D:\\users\\Anthony\\Desktop\\eyes";
             globalFileStream = new FileStream(systemFileLocation, FileMode.OpenOrCreate, FileAccess.ReadWrite);
-            tracker = new iFocus(globalFileStream);
             serverConnector = new ServerConnection(globalFileStream);
+            tracker = new iFocus(serverConnector);
             iFocus.GetOpenWindows();
         }
         
@@ -306,10 +306,7 @@ namespace TobiiForm
                 this.WindowState = FormWindowState.Minimized;
             }
         }
-
-
-
-
+        
     }
 
 }

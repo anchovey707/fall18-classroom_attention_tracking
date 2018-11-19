@@ -24,6 +24,7 @@ namespace TobiiForm
         private byte[] outStream,inStream;
         private bool readyToSend = false;
         private int port = 61600;
+        private string ip = "192.168.0.196";
         /*int ConnectionAttempts = 0;
         TcpClient client = new TcpClient();
         NetworkStream serverStream;*/
@@ -55,7 +56,7 @@ namespace TobiiForm
 
             Console.WriteLine("trying to connect");
             ///////////////////need a way to grab an IP from a config file///////////////////
-            tcpSocket.Connect("192.168.0.99", port);
+            tcpSocket.Connect(ip, port);
 
             Console.WriteLine("waiting for starting char");
             String returndata = "";
@@ -103,19 +104,24 @@ namespace TobiiForm
             //wait for port
             String returndata = "";
             inStream = new byte[0];
-            while (true) { 
-                returndata = "";
-                while (!returndata.Contains(";")) {
-                    inStream = new byte[tcpSocket.Available];
-                    tcpSocket.Receive(inStream);
-                    returndata += Encoding.ASCII.GetString(inStream);
+            tcpSocket.ReceiveTimeout = 1000;
+            while (true) {
+                try { 
+                    returndata = "";
+                    while (!returndata.Contains(";")) {
+                        inStream = new byte[tcpSocket.Available];
+                        tcpSocket.Receive(inStream);
+                        returndata += Encoding.ASCII.GetString(inStream);
+                    }
+                    Console.WriteLine("got data=" + returndata);
+                    returndata = returndata.Substring(returndata.IndexOf(":") + 1, returndata.Length - returndata.IndexOf(":") - 2);
+                    port = int.Parse(returndata);
+                    Console.WriteLine("port=" + port);
+                    readyToSend = true;
+                }catch(SocketException e) {
+                    tcpSocket.Send(new byte[] { 0 });
+                    Console.WriteLine("timeout,sending heartbeat");
                 }
-                Console.WriteLine("got data=" + returndata);
-                returndata = returndata.Substring(returndata.IndexOf(":") + 1, returndata.Length - returndata.IndexOf(":") - 2);
-                port = int.Parse(returndata);
-                Console.WriteLine("port=" + port);
-                readyToSend = true;
-                Console.WriteLine("Starting UDP");
             }
         }
 
@@ -164,7 +170,15 @@ namespace TobiiForm
             }
             timestamp = dataString;
         }*/
-        
+
+
+        public void SendDataToServer(byte[] data) {
+            try {
+                if (readyToSend)
+                    udpSocket.SendTo(data, new IPEndPoint(IPAddress.Parse(ip), port));
+            } catch (IOException e) {
+            }
+        }
 
         //grab file/write to connection
         public void SendDataToServer(Int32 byteCount)
@@ -182,7 +196,7 @@ namespace TobiiForm
                 byte[] bytes = Encoding.ASCII.GetBytes((++count).ToString());
                 Debug.WriteLine("count="+count);
                 if (readyToSend)
-                    udpSocket.SendTo(bytes, new IPEndPoint(IPAddress.Parse("192.168.0.99"),port));
+                    udpSocket.SendTo(newDataFromFile, new IPEndPoint(IPAddress.Parse(ip),port));
             }
             catch(IOException e)
             {

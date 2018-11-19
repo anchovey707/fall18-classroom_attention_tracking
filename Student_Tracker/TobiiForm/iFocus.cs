@@ -36,8 +36,7 @@ namespace TobiiForm
         //Avoid hardcoding screen dimensions - Needed as tobii returns values 0-1 x,y
         Int32 screenWidth = Screen.PrimaryScreen.Bounds.Width;
         Int32 screenHeight = Screen.PrimaryScreen.Bounds.Height;
-        String surveyAnswers;
-        String previousAnswer = "100";
+        ServerConnection server;
     
         //Constructor
         public iFocus(FileStream fs)
@@ -46,6 +45,14 @@ namespace TobiiForm
             SetEyeTrackers();
             Form1FileStreamObject = fs;
             tracker = eyeTrackers[0];
+        }
+
+        public iFocus(ServerConnection server) {
+            Debug.Write("iFocus - Started!");
+            SetEyeTrackers();
+            tracker = eyeTrackers[0];
+            this.server = server;
+            this.tracker.GazeDataReceived += EyeTracker_GazeDataReceived2;
         }
 
         //get 'all' of the eyetrackers (should only be 1) and puts it into array
@@ -71,18 +78,61 @@ namespace TobiiForm
             jSonArray = new List<JsonObject>();
             // Start listening to gaze data.
             System.Threading.Thread.Sleep(1000);
-            eyeTracker.GazeDataReceived += EyeTracker_GazeDataReceived;
+            //eyeTracker.GazeDataReceived += EyeTracker_GazeDataReceived;
             // Wait for some data to be received.
-            System.Threading.Thread.Sleep(250);
+            //System.Threading.Thread.Sleep(220);
             // Stop listening to gaze data.
-            eyeTracker.GazeDataReceived -= EyeTracker_GazeDataReceived;
+            //eyeTracker.GazeDataReceived -= EyeTracker_GazeDataReceived;
             //Debug.WriteLine(ByteCount);
             currentData = JsonConvert.SerializeObject(jSonArray.ToArray(), Formatting.Indented);
             PrintToFile(currentData);
         }
 
-        
+        private void EyeTracker_GazeDataReceived2(object sender, GazeDataEventArgs e) {
+            jSonArray = new List<JsonObject>();
+            // Left eye coordinates multiplied by computer width and height
+            //Remember to change 1680 based on monitor size
+            float x = (e.LeftEye.GazePoint.PositionOnDisplayArea.X) * screenWidth;
+            //Remember to change 1050 based on monitor size
+            float y = (e.LeftEye.GazePoint.PositionOnDisplayArea.Y) * screenHeight;
+            String current = "\"" + x.ToString() + ", " + y.ToString() + "\"";
+            Debug.WriteLine("X:" + x.ToString() + ", Y:" + y.ToString() + "\"");
+            // check NaN
+            if (Double.IsNaN(e.LeftEye.GazePoint.PositionOnDisplayArea.X)) {
+                //X and Y coordinates
+                jSonPointDataObject = new JsonObject(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"));
+                jSonArray.Add(jSonPointDataObject);
 
+                return;
+            }
+
+            PointF center = new PointF(x, y);
+
+            String viewingBrowser = "";
+            //this.updateBox(center);
+            foreach (Window w in openTabs) {
+
+                Rect tempRect = w.GetRectangleInfo();
+                //Check for what is being viewed
+                if (tempRect.Left < x && x < tempRect.Right && tempRect.Top < y && tempRect.Bottom > y) {
+                    //Current browser tab being viewed
+                    viewingBrowser = ", " + w.GetTabInfo();
+                    break;
+                }
+
+            }
+            String xString = x.ToString();
+            String yString = y.ToString();
+
+            //jSonPointDataObject = new JsonObject(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), xString, yString,
+            //  viewingBrowser, surveyAnswers);
+            //jSonArray.Add(jSonPointDataObject);
+            currentData = "#" + Environment.UserName + "#" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") 
+                + "#" + xString + "#" + yString + "#" + viewingBrowser + ";";
+            server.SendDataToServer(Encoding.ASCII.GetBytes(currentData));
+        }
+
+        /*V's old code
         private void EyeTracker_GazeDataReceived(object sender, GazeDataEventArgs e)
         {
             // Left eye coordinates multiplied by computer width and height
@@ -101,7 +151,7 @@ namespace TobiiForm
 
                 return;
             }
-
+            
             //REMOVE FOR FINAL - ONLY NEED FOR DOUBLE MONITOR
             //x += 1680;
 
@@ -135,7 +185,8 @@ namespace TobiiForm
             {
                 Form1.surveyAnswer = "100";
             }
-        }
+            
+        }*/
 
         //Print to file
         // Seek - So always appends to end, did not immediately find append to end so went with it
