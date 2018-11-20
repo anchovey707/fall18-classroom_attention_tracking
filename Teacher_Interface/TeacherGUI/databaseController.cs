@@ -12,6 +12,7 @@ namespace TeacherGUI
         public static String databaseUser = "teacher";
         public static String databasePass = "course";
         public static String databaseName = "attentiontracking";
+        public static String username = "";
         public static String sqlQuery;
         public static MySqlConnection conn = new MySql.Data.MySqlClient.MySqlConnection();
    
@@ -49,6 +50,7 @@ namespace TeacherGUI
                     admin = reader.GetBoolean("administrator");
                     id = reader.GetString("login_id");
                     reader.Close();
+                    username = user;
                     return true;
                 } else {
                     reader.Close();

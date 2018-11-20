@@ -12,28 +12,29 @@ namespace TeacherGUI
 {
     public partial class Form1 : Form
     {
-        //static TcpClient clientSocket = new TcpClient();
-        Socket clientSocket;
+        //static TcpClient tcpSocket = new TcpClient();
+        public Socket tcpSocket,udpSocket;
         byte[] outStream;
         byte[] inStream;
-        UdpClient listener;
-        public Socket udpsock;
+        
         Form teacherHome;
-        Thread childThread;
+        Thread tcpThread,udpThread;
 
+        List<String> students = new List<String>();
+        
         public Form1(Form f,int course)
         {
             teacherHome = f;
             InitializeComponent();
             try
             {
-                clientSocket = new Socket(SocketType.Stream, ProtocolType.Tcp);
-                udpsock = new Socket(SocketType.Dgram, ProtocolType.Udp);
+                tcpSocket = new Socket(SocketType.Stream, ProtocolType.Tcp);
+                udpSocket = new Socket(SocketType.Dgram, ProtocolType.Udp);
 
                 outStream = new byte[10025];
 
                 Console.WriteLine("trying to connect");
-                clientSocket.Connect(databaseController.databaseIP, 61600);
+                tcpSocket.Connect(databaseController.databaseIP, 61600);
 
                Console.WriteLine("waiting for starting char");
                 String returndata="";
@@ -41,22 +42,22 @@ namespace TeacherGUI
 
                 //Wait for the start char, ';'
                 while (returndata != ";") {
-                    inStream=new byte[clientSocket.Available];
-                    clientSocket.Receive(inStream);
+                    inStream=new byte[tcpSocket.Available];
+                    tcpSocket.Receive(inStream);
                     returndata = Encoding.ASCII.GetString(inStream);
                     Console.WriteLine("'"+returndata+"'");
                 }
                 Console.WriteLine("got start char");
-                outStream = Encoding.ASCII.GetBytes("#" + Environment.UserName + "#" + course + ";");
+                outStream = Encoding.ASCII.GetBytes("#" + databaseController.username + "#" + course + ";");
                 //send my name and corse that I want to stream
-                clientSocket.Send(outStream);
+                tcpSocket.Send(outStream);
                 Console.WriteLine("waiting for port info");
                 //wait for port
                 inStream = new byte[0];
                 returndata ="";
                 while (!returndata.Contains(";")) {
-                    inStream = new byte[clientSocket.Available];
-                    clientSocket.Receive(inStream);
+                    inStream = new byte[tcpSocket.Available];
+                    tcpSocket.Receive(inStream);
                     returndata += Encoding.ASCII.GetString(inStream);
                 }
                 Console.WriteLine("got data="+returndata);
@@ -67,12 +68,10 @@ namespace TeacherGUI
                 returndata = returndata.Substring(returndata.IndexOf(":") + 1, returndata.Length - returndata.IndexOf(":") - 2);
 
 
-                udpsock.Bind(new IPEndPoint(IPAddress.Any,int.Parse(returndata)));
+                udpSocket.Bind(new IPEndPoint(IPAddress.Any,int.Parse(returndata)));
                 Console.WriteLine("Starting UDP");
-                ThreadStart childref = new ThreadStart(ListenForPackets);
-                childThread = new Thread(childref);
-                childThread.Start();
-                Console.WriteLine("Thread should have started");
+                udpThread = new Thread(ListenForPackets);udpThread.Start();
+                tcpThread = new Thread(heartBeat);tcpThread.Start();
             }
             catch (Exception e){
                 please.Text = e.StackTrace;
@@ -151,20 +150,85 @@ namespace TeacherGUI
 
         }
 
+
         public void ListenForPackets()
         {
+            string packetText;
+            string name = "", posX = "", posY = "", time = "", app = "";
+            int index = 0;
             while (true)
             {
                 //Console.WriteLine("Listening for next packet");
-                if (udpsock.Available > 0)
+                if (udpSocket.Available > 0)
                 {
-                    inStream = new byte[udpsock.Available];
+                    inStream = new byte[udpSocket.Available];
 
-                    udpsock.Receive(inStream);
-                    Console.WriteLine("Packet=" + Encoding.ASCII.GetString(inStream));
+                    udpSocket.Receive(inStream);
+                    //Packet is in bytes so decoded it
+                    packetText = Encoding.ASCII.GetString(inStream);
+                    Console.WriteLine("Packet=" + packetText);
+                    index = 0;
+                    name = packetText.Substring(index + 1, packetText.IndexOf('#', index + 1) - 1);
+                    index += name.Length + 1;
+                    posX = packetText.Substring(index + 1, packetText.IndexOf('#', index + 1) - 1 - index);
+                    index += posX.Length + 1;
+                    posY = packetText.Substring(index + 1, packetText.IndexOf('#', index + 1) - 1 - index);
+                    index += posY.Length + 1;
+                    time = packetText.Substring(index + 1, packetText.IndexOf('#', index + 1) - 1 - index);
+                    index += time.Length + 1;
+                    if (packetText.Substring(index).Contains("#"))
+                        try {
+                            app = packetText.Substring(index + 1, packetText.Length - index - 2 - packetText.Substring(packetText.IndexOf(';')).Length);
+                        }catch(Exception e){
+                            app = "";
+                        }
+                    else
+                        app = "";
+                    if (!students.Contains(name)){
+                        addStudent(name);
+                    } else {
+                        //update student info
+                        if(!app.Equals(""))
+                            updateStudentApp(name,app);
+                    }
                 }
             }
         }
+
+        public void addStudent(string name) {
+            if (listView1.InvokeRequired) {
+                Invoke((MethodInvoker)delegate { this.addStudent(name); });
+            } else {
+                students.Add(name);
+                Console.WriteLine("Added " + name + " to the class");
+                ListViewItem item = new ListViewItem("student name");
+                item.SubItems.Add(name);
+                item.SubItems.Add("");
+                listView1.Items.Add(item);
+            }
+        }
+        public void updateStudentApp(string name,string app) {
+            if (listView1.InvokeRequired) {
+                Invoke((MethodInvoker)delegate { this.updateStudentApp(name,app); });
+            } else {
+                listView1.Items[3 + students.IndexOf(name)].SubItems[2].Text = app;
+                
+            }
+
+
+        }
+
+        public void heartBeat() {
+            while (true) {
+                Thread.Sleep(1000);
+                tcpSocket.Send(new byte[] { 0 });
+            }
+        }
+
+
+
+
+
 
         private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -182,11 +246,14 @@ namespace TeacherGUI
         }
 
         private void button1_Click(object sender, EventArgs e){
-            childThread.Abort();
             this.Close();
         }
         private void Form1_FormClosing(object sender, FormClosingEventArgs e) {
             //need to stop thread as well
+            tcpThread.Abort();
+            udpThread.Abort();
+            tcpSocket.Close();
+            udpSocket.Close();
             teacherHome.Show();
         }
         private List<HeatPoint> HeatPoints = new List<HeatPoint>();
