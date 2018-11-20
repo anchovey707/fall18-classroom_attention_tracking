@@ -116,6 +116,7 @@ namespace TobiiForm
                 //Check for what is being viewed
                 if (tempRect.Left < x && x < tempRect.Right && tempRect.Top < y && tempRect.Bottom > y) {
                     //Current browser tab being viewed
+                    
                     viewingBrowser = ", " + w.GetTabInfo();
                     break;
                 }
@@ -127,8 +128,8 @@ namespace TobiiForm
             //jSonPointDataObject = new JsonObject(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), xString, yString,
             //  viewingBrowser, surveyAnswers);
             //jSonArray.Add(jSonPointDataObject);
-            currentData = "#" + Environment.UserName + "#" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") 
-                + "#" + xString + "#" + yString + "#" + viewingBrowser + ";";
+            currentData = "#" + Environment.UserName + "#" + xString + "#" + yString 
+                + "#" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + "#" + viewingBrowser + ";";
             server.SendDataToServer(Encoding.ASCII.GetBytes(currentData));
         }
 

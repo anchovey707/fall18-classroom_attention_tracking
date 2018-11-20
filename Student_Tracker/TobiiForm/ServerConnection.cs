@@ -24,7 +24,7 @@ namespace TobiiForm
         private byte[] outStream,inStream;
         private bool readyToSend = false;
         private int port = 61600;
-        private string ip = "192.168.0.196";
+        private string ip = "192.168.0.54";
         /*int ConnectionAttempts = 0;
         TcpClient client = new TcpClient();
         NetworkStream serverStream;*/
