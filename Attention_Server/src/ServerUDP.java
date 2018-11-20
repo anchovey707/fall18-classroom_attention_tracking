@@ -29,7 +29,7 @@ public class ServerUDP implements Runnable{
 	public void run() {
 		try {
 			//Create a print writer to print to a file
-			PrintWriter writer = new PrintWriter(String.valueOf(streamSocket.getLocalPort())+".txt");
+			//PrintWriter writer = new PrintWriter(String.valueOf(streamSocket.getLocalPort())+".txt");
 			byte[] recievedBytes;
 			String recievedString;
 			Random rand = new Random();
