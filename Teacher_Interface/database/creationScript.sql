@@ -97,7 +97,7 @@ CREATE TABLE IF NOT EXISTS `attentiontracking`.`trackingdata` (
   `x` FLOAT NULL DEFAULT NULL,
   `y` FLOAT NULL DEFAULT NULL,
   `openApplication` VARCHAR(255) NULL DEFAULT NULL,
-  `dataTimestamp` DATETIME NOT NULL,
+  `dataTimestamp` DATETIME(3) NOT NULL,
   INDEX `fk_trcrn` (`crn` ASC) ,
   INDEX `fk_trid` (`student_id` ASC) ,
   CONSTRAINT `fk_trcrn`
