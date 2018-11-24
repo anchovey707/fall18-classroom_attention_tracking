@@ -6,61 +6,101 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Random;
 
 public class ServerUDP implements Runnable{
-	byte[] streambuffer = new byte[5000];
-    DatagramSocket streamSocket;
-    DatagramPacket streamPacket;
-	DataInputStream inputStream;
-	DataOutputStream OutputStream;
-	InetAddress ip;
+	private byte[] streambuffer = new byte[5000];
+	private DatagramSocket streamSocket;
+	private DatagramPacket streamPacket;
+	private DataInputStream inputStream;
+	private DataOutputStream OutputStream;
+	private Connection DBconn;
+	private boolean run=true,database=true;
+	private int crn;
+	private InetAddress ip;
 	
-	public ServerUDP(InetAddress i,DatagramSocket d) {
+	//Get the crn,the target IP(teacher),a datagramSocket, and a DB Connection
+	public ServerUDP(int course,InetAddress i,DatagramSocket d,Connection conn) {
 		ip=i;
 		streamSocket=d;
 		streamPacket = new DatagramPacket(streambuffer, streambuffer.length);
+		crn=course;
+		if(conn==null)
+			database=false;
+		else
+			DBconn=conn;
 		System.out.println("\t\tNew Datagram socket on "+d.getLocalPort());
 	}
-	public ServerUDP(InetAddress i,int port) throws SocketException {
-		this(i,new DatagramSocket(port));
+	//Or just give a port number and it will create a socket
+	public ServerUDP(int crn,InetAddress i, int port, Connection conn) throws SocketException {
+		this(crn,i,new DatagramSocket(port),conn);
+	}
+	//or don't give it a DB connection and it will not do anything with a DB
+	public ServerUDP(int crn,InetAddress i,int port) throws SocketException {
+		this(crn,i,new DatagramSocket(port),null);
 	}
 
+	
 	public void run() {
-		try {
-			//Create a print writer to print to a file
-			//PrintWriter writer = new PrintWriter(String.valueOf(streamSocket.getLocalPort())+".txt");
-			byte[] recievedBytes;
-			String recievedString;
-			Random rand = new Random();
-			int packets=0;
-			while(++packets>0) {
-				try{
-					streamSocket.receive(streamPacket);
-					//recievedBytes = streamPacket.getData();
+		byte[] recievedBytes;
+		String recievedString;
+		//Setting a timeout will allow for the thread to get a chance to stop if it needs to
+		try {streamSocket.setSoTimeout(1000);
+		} catch (SocketException e1) {}
+		
+		while(run) {
+			try{
+				//get a packet in and send it off to the teacher
+				streamSocket.receive(streamPacket);
+				recievedString=new String(streamPacket.getData(),streamPacket.getOffset(),streamPacket.getLength());	
+				recievedBytes=recievedString.getBytes();
+				streamSocket.send(new DatagramPacket(recievedBytes , recievedBytes.length,ip,streamSocket.getLocalPort()));
+				//try to write the data to the database
+				if(database) {
+					String user,posX,posY,time,app="";
+					int index=0;
+                    user = recievedString.substring(index + 1, recievedString.indexOf('#', index + 1) - 1);
+                    index += user.length() + 1;
+                    posX = recievedString.substring(index + 1, recievedString.indexOf('#', index + 1) - 1 - index);
+                    index += posX.length() + 1;
+                    posY = recievedString.substring(index + 1, recievedString.indexOf('#', index + 1) - 1 - index);
+                    index += posY.length() + 1;
+                    time = recievedString.substring(index + 1, recievedString.indexOf('#', index + 1) - 1 - index);
+                    index += time.length() + 1;
+                    if (recievedString.substring(index).contains("#"))
+                        try {
+                            app = recievedString.substring(index + 1, recievedString.length() - index - 2 - recievedString.substring(recievedString.indexOf(';')).length());
+                        }catch(Exception e){
+                            app = "";
+                        }
+                    else
+                        app = "";
+					try {
+						Statement state = DBconn.createStatement();
+						state.execute("Insert into trackingdata values("+crn+",'"+user+"',"+posX+","+posY+",'"+"','"+time+");");
+					} catch (SQLException e) {
+						System.out.println("database insert failed Failed");
+						e.printStackTrace();
+						
+					}
 				
-					//recievedString=new String(recievedBytes,0,streamPacket.getLength());
-					recievedString=new String(streamPacket.getData(),streamPacket.getOffset(),streamPacket.getLength());				
-					//System.out.println(recievedString);
-					recievedBytes=recievedString.getBytes();
-					//System.out.println("sending "+recievedBytes.length+" bytes to "+ip);
-
-				
-					streamSocket.send(new DatagramPacket(recievedBytes , recievedBytes.length,ip,streamSocket.getLocalPort()));
-					//writer.write("\n"+recievedString);
-					//writer.flush();
-				
-				}catch(Exception e){
-					System.out.println("ServerUDP ERROR");
-					e.printStackTrace();
 				}
 				
+			}catch(IOException e){
+				//
+				//System.out.println("ServerUDP ERROR");
 			}
 			
-		} catch (IOException e) {
-				e.printStackTrace();
-		}	
-		
+		}
+		streamSocket.close();
+		System.out.println("closed the socket/port on"+streamSocket.getPort());
 	}
 
+	
+	public void stop() {
+		run=false;
+	}
 }
