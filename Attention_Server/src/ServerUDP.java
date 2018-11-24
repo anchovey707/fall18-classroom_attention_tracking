@@ -60,27 +60,26 @@ public class ServerUDP implements Runnable{
 				streamSocket.send(new DatagramPacket(recievedBytes , recievedBytes.length,ip,streamSocket.getLocalPort()));
 				//try to write the data to the database
 				if(database) {
-					String user,posX,posY,time,app="";
-					int index=0;
-                    user = recievedString.substring(index + 1, recievedString.indexOf('#', index + 1) - 1);
+					String user,posX,posY,time,app;
+					int index=1;
+                    user = recievedString.substring(index, recievedString.indexOf('#', index));
                     index += user.length() + 1;
-                    posX = recievedString.substring(index + 1, recievedString.indexOf('#', index + 1) - 1 - index);
+					posX = recievedString.substring(index, recievedString.indexOf('#', index));
                     index += posX.length() + 1;
-                    posY = recievedString.substring(index + 1, recievedString.indexOf('#', index + 1) - 1 - index);
+					posY = recievedString.substring(index, recievedString.indexOf('#', index));
                     index += posY.length() + 1;
-                    time = recievedString.substring(index + 1, recievedString.indexOf('#', index + 1) - 1 - index);
+                    time = recievedString.substring(index, recievedString.indexOf('#', index));
                     index += time.length() + 1;
-                    if (recievedString.substring(index).contains("#"))
-                        try {
-                            app = recievedString.substring(index + 1, recievedString.length() - index - 2 - recievedString.substring(recievedString.indexOf(';')).length());
-                        }catch(Exception e){
-                            app = "";
-                        }
-                    else
+					//Removing milliseconds
+					//time=time.substring(0,time.indexOf('.'));
+                    try {
+                        app = recievedString.substring(index,recievedString.indexOf(';'));
+                    }catch(Exception e){
                         app = "";
+                    }
 					try {
 						Statement state = DBconn.createStatement();
-						state.execute("Insert into trackingdata values("+crn+",'"+user+"',"+posX+","+posY+",'"+"','"+time+");");
+						state.execute("Insert into trackingdata values("+crn+",'"+user+"',"+posX+","+posY+",'"+app+"','"+time+"');");
 					} catch (SQLException e) {
 						System.out.println("database insert failed Failed");
 						e.printStackTrace();
