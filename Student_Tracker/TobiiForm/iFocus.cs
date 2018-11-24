@@ -36,6 +36,8 @@ namespace TobiiForm
         //Avoid hardcoding screen dimensions - Needed as tobii returns values 0-1 x,y
         Int32 screenWidth = Screen.PrimaryScreen.Bounds.Width;
         Int32 screenHeight = Screen.PrimaryScreen.Bounds.Height;
+        int eyeTrackerWaitMax = 35,eyeTrackerWait=0;
+
         ServerConnection server;
     
         //Constructor
@@ -52,7 +54,7 @@ namespace TobiiForm
             SetEyeTrackers();
             tracker = eyeTrackers[0];
             this.server = server;
-            this.tracker.GazeDataReceived += EyeTracker_GazeDataReceived2;
+            this.tracker.GazeDataReceived += EyeTracker_GazeDataReceived;
         }
 
         //get 'all' of the eyetrackers (should only be 1) and puts it into array
@@ -63,7 +65,7 @@ namespace TobiiForm
             {
                 logger.Fatal( this.GetType().Name + " Class, Eye Tracker not found " + DateTime.Now + "\n");
                 TobiiEyeTrackerProcess.Close();
-                //Environment.Exit(-1);
+                Environment.Exit(-1);
             }
             
         }
@@ -78,116 +80,59 @@ namespace TobiiForm
             jSonArray = new List<JsonObject>();
             // Start listening to gaze data.
             System.Threading.Thread.Sleep(1000);
-            //eyeTracker.GazeDataReceived += EyeTracker_GazeDataReceived;
-            // Wait for some data to be received.
-            //System.Threading.Thread.Sleep(220);
-            // Stop listening to gaze data.
-            //eyeTracker.GazeDataReceived -= EyeTracker_GazeDataReceived;
-            //Debug.WriteLine(ByteCount);
             currentData = JsonConvert.SerializeObject(jSonArray.ToArray(), Formatting.Indented);
             PrintToFile(currentData);
         }
 
-        private void EyeTracker_GazeDataReceived2(object sender, GazeDataEventArgs e) {
-            jSonArray = new List<JsonObject>();
-            // Left eye coordinates multiplied by computer width and height
-            //Remember to change 1680 based on monitor size
-            float x = (e.LeftEye.GazePoint.PositionOnDisplayArea.X) * screenWidth;
-            //Remember to change 1050 based on monitor size
-            float y = (e.LeftEye.GazePoint.PositionOnDisplayArea.Y) * screenHeight;
-            String current = "\"" + x.ToString() + ", " + y.ToString() + "\"";
-            Debug.WriteLine("X:" + x.ToString() + ", Y:" + y.ToString() + "\"");
-            // check NaN
-            if (Double.IsNaN(e.LeftEye.GazePoint.PositionOnDisplayArea.X)) {
-                //X and Y coordinates
-                jSonPointDataObject = new JsonObject(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"));
-                jSonArray.Add(jSonPointDataObject);
+        private void EyeTracker_GazeDataReceived(object sender, GazeDataEventArgs e) {
+            if (eyeTrackerWait++ > eyeTrackerWaitMax) {
+                jSonArray = new List<JsonObject>();
+                // Left eye coordinates multiplied by computer width and height
+                //Remember to change 1680 based on monitor size
+                float x = (e.LeftEye.GazePoint.PositionOnDisplayArea.X) * screenWidth;
+                //Remember to change 1050 based on monitor size
+                float y = (e.LeftEye.GazePoint.PositionOnDisplayArea.Y) * screenHeight;
+                String current = "\"" + x.ToString() + ", " + y.ToString() + "\"";
+                Debug.WriteLine("X:" + x.ToString() + ", Y:" + y.ToString() + "\"");
+                // check NaN
+                if (Double.IsNaN(e.LeftEye.GazePoint.PositionOnDisplayArea.X)) {
+                    //X and Y coordinates
+                    jSonPointDataObject = new JsonObject(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"));
+                    jSonArray.Add(jSonPointDataObject);
 
-                return;
-            }
-
-            PointF center = new PointF(x, y);
-
-            String viewingBrowser = "";
-            //this.updateBox(center);
-            foreach (Window w in openTabs) {
-
-                Rect tempRect = w.GetRectangleInfo();
-                //Check for what is being viewed
-                if (tempRect.Left < x && x < tempRect.Right && tempRect.Top < y && tempRect.Bottom > y) {
-                    //Current browser tab being viewed
-                    
-                    viewingBrowser = ", " + w.GetTabInfo();
-                    break;
+                    return;
                 }
 
-            }
-            String xString = x.ToString();
-            String yString = y.ToString();
+                PointF center = new PointF(x, y);
 
-            //jSonPointDataObject = new JsonObject(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), xString, yString,
-            //  viewingBrowser, surveyAnswers);
-            //jSonArray.Add(jSonPointDataObject);
-            currentData = "#" + Environment.UserName + "#" + xString + "#" + yString 
-                + "#" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + "#" + viewingBrowser + ";";
-            server.SendDataToServer(Encoding.ASCII.GetBytes(currentData));
+                String viewingBrowser = "";
+                GetOpenWindows();
+                foreach (Window w in openTabs) {
+                    Console.WriteLine(w.GetTabInfo());
+                    Rect tempRect = w.GetRectangleInfo();
+                    //Check for what is being viewed
+                    if (tempRect.Left < x && x < tempRect.Right && tempRect.Top < y && tempRect.Bottom > y) {
+                        //Current browser tab being viewed
+
+                        viewingBrowser = w.GetTabInfo();
+                       break;
+                    }
+                    
+
+                }
+                String xString = x.ToString();
+                String yString = y.ToString();
+
+                //jSonPointDataObject = new JsonObject(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), xString, yString,
+                //  viewingBrowser, surveyAnswers);
+                //jSonArray.Add(jSonPointDataObject);
+                currentData = "#" + Environment.UserName + "#" + xString + "#" + yString
+                    + "#" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + "#" + viewingBrowser + ";";
+                server.SendDataToServer(Encoding.ASCII.GetBytes(currentData));
+                eyeTrackerWait = 0;
+            }
         }
 
-        /*V's old code
-        private void EyeTracker_GazeDataReceived(object sender, GazeDataEventArgs e)
-        {
-            // Left eye coordinates multiplied by computer width and height
-            //Remember to change 1680 based on monitor size
-            float x = (e.LeftEye.GazePoint.PositionOnDisplayArea.X) * screenWidth;
-            //Remember to change 1050 based on monitor size
-            float y = (e.LeftEye.GazePoint.PositionOnDisplayArea.Y) * screenHeight;
-            String current = "\"" + x.ToString() + ", " + y.ToString() + "\"";
-            Debug.WriteLine("X:" + x.ToString() + ", Y:" + y.ToString() + "\"");
-            // check NaN
-            if (Double.IsNaN(e.LeftEye.GazePoint.PositionOnDisplayArea.X))
-            {
-                //X and Y coordinates
-                jSonPointDataObject = new JsonObject(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"));
-                jSonArray.Add(jSonPointDataObject);
-
-                return;
-            }
-            
-            //REMOVE FOR FINAL - ONLY NEED FOR DOUBLE MONITOR
-            //x += 1680;
-
-            PointF center = new PointF(x, y);
-
-            String viewingBrowser = "";
-            //this.updateBox(center);
-            foreach (Window w in openTabs)
-            {
-
-                Rect tempRect = w.GetRectangleInfo();
-                //Check for what is being viewed
-                if (tempRect.Left < x && x < tempRect.Right && tempRect.Top < y && tempRect.Bottom > y)
-                {
-                    //Current browser tab being viewed
-                    viewingBrowser = ", " + w.GetTabInfo();
-                    break;
-                }
-
-            }
-            //currentData += DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + ", " + current + viewingBrowser + "\n";
-            String xString = x.ToString();
-            String yString = y.ToString();
-            surveyAnswers = Form1.surveyAnswer;
-
-            jSonPointDataObject = new JsonObject(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), xString, yString, 
-                viewingBrowser, surveyAnswers);
-            jSonArray.Add(jSonPointDataObject);
-            previousAnswer = surveyAnswers;
-            if(!previousAnswer.Equals("100"))
-            {
-                Form1.surveyAnswer = "100";
-            }
-            
-        }*/
 
         //Print to file
         // Seek - So always appends to end, did not immediately find append to end so went with it
@@ -280,29 +225,7 @@ namespace TobiiForm
 
 
 
-        //Start 4c Software - Removed
-        // public void RunTobiiSoftware()
-        // {
-        //Run tobii software as it will be off and we must toggle it on - proper path is important here!
-        //    try
-        //    {
-        //        Process[] TobiiTray = Process.GetProcessesByName("Tobii.EyeX.Tray");
-        //        if(TobiiTray.Length > 0) {
-        //            TobiiEyeTrackerProcess = TobiiTray[0]; // Assign to tobiiprocess so it can be closed at log-off according to IT guys wishes
-        //            return; // Tobii Already Running should not be the case
-        //         }
-        //        string executablePath = Path.GetFullPath("C:\\Program Files (x86)\\Tobii\\Tobii EyeX Interaction\\Tobii.EyeX.Tray.exe");
-        //        TobiiEyeTrackerProcess = new Process();
-        //        TobiiEyeTrackerProcess.StartInfo.FileName = executablePath;
-        //        TobiiEyeTrackerProcess.Start();
-        //        System.Threading.Thread.Sleep(15000);
-        //    }
-        //    catch(Exception e)
-        //    {
-        //        logger.Fatal("Unable to start Tobii4c Process" + DateTime.Now + "\n");
-        //        Environment.Exit(-1);
-        //    }
-        //}
+       
 
 
     }
