@@ -29,7 +29,7 @@ namespace TobiiForm
             Application.SetCompatibleTextRenderingDefault(false);
             current = new Form1();
 
-            
+            current.Show();
 
 
             Debug.WriteLine("Trying to run App");
