@@ -65,9 +65,9 @@ COLLATE = utf8mb4_general_ci;
 -- -----------------------------------------------------
 -- Table `attentiontracking`.`student_courses`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `attentiontracking`.`student_course` ;
+DROP TABLE IF EXISTS `attentiontracking`.`student_courses` ;
 
-CREATE TABLE IF NOT EXISTS `attentiontracking`.`student_course` (
+CREATE TABLE IF NOT EXISTS `attentiontracking`.`student_courses` (
   `crn` INT(7) NOT NULL,
   `student_id` VARCHAR(32) NOT NULL,
   INDEX `fk_stcrn` (`crn` ASC),
@@ -97,7 +97,7 @@ CREATE TABLE IF NOT EXISTS `attentiontracking`.`trackingdata` (
   `x` FLOAT NULL DEFAULT NULL,
   `y` FLOAT NULL DEFAULT NULL,
   `openApplication` VARCHAR(255) NULL DEFAULT NULL,
-  `dataTimestamp` DATETIME NOT NULL,
+  `dataTimestamp` DATETIME(3) NOT NULL,
   INDEX `fk_trcrn` (`crn` ASC) ,
   INDEX `fk_trid` (`student_id` ASC) ,
   CONSTRAINT `fk_trcrn`
