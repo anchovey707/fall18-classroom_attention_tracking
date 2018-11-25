@@ -43,7 +43,8 @@ namespace TeacherGUI
         //Change udpListener port to the current class port as received on the TCP connection
         private void CurrentClass_Click(object sender, EventArgs e)
         {
-            Form form; 
+            Form form;
+            System.Threading.Thread.Sleep(4000);
             try
             {
                 form= new Form1(this,int.Parse(selectedClass.Text));
@@ -52,8 +53,12 @@ namespace TeacherGUI
             {
                 form = new Form1(this,12345);
             }
-            form.Show();
-            Hide();
+            try {
+                form.Show();
+                Hide();
+            } catch (Exception eb) {
+
+            }
         }
 
         private void HistoricData_Click(object sender, EventArgs e)

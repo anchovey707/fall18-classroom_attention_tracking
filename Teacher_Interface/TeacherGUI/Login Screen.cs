@@ -8,10 +8,10 @@ namespace TeacherGUI
 
     public partial class Login_Screen : Form
     {
-        databaseController DB = new databaseController();
         public Login_Screen()
         {
             InitializeComponent();
+            databaseController.dbConnect();
         }
 
         //loginButton
@@ -43,8 +43,8 @@ namespace TeacherGUI
                 this.Hide();
             }*/
             
-            if (DB.login(usernameTextBox.Text, passwordTextBox.Text,false)) {
-                new TeacherHome(DB.isAdmin(), DB.getClasses()).Show();
+            if (databaseController.login(usernameTextBox.Text, passwordTextBox.Text,false)) {
+                new TeacherHome(databaseController.isAdmin(), databaseController.getClasses()).Show();
                 databaseController.conn.Close();
                 this.Hide();
             }else{
