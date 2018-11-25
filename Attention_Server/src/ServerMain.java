@@ -53,7 +53,7 @@ public class ServerMain {
 			while(true) {
 				
 				try{
-					System.out.println("Waiting for new connection");
+					System.out.println("Waiting...");
 					ClientConnection client = new ClientConnection(server.accept());
 					client.start();
 					//if teacher, then add course to map, create new datagram socket for it, and update students
@@ -114,6 +114,8 @@ public class ServerMain {
 			studentList.get(i).Stop();
 		for(int i=0;i<teacherList.size();i++)
 			teacherList.get(i).Stop();
+		for(int i=0;i<udpSockets.size();i++)
+			udpSockets.get(i).stop();
 		//If you're here, then something went wrong
 		System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!END OF SERVERMAIN!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 		
@@ -170,12 +172,12 @@ public class ServerMain {
 	public static int updateStudents(){
 		int changed=0;
 		for(int i=0;i<studentList.size();i++) {
-			if(currentCourses.containsKey(studentList.get(i).getCourse())) {
+			if(currentCourses.containsKey(studentList.get(i).getCourse())&&studentList.get(i).getPort()==basePort+1) {				
 				studentList.get(i).updatePort(currentCourses.get(studentList.get(i).getCourse()).intValue());
 				System.out.println("found a class");
 			
 			//else set the student to default port (basePort+1)
-			}else
+			}else if(studentList.get(i).getPort()!=basePort+1)
 				studentList.get(i).updatePort(basePort+1);
 			changed++;
 		}
