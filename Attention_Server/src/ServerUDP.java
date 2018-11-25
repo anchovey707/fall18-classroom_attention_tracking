@@ -94,8 +94,9 @@ public class ServerUDP implements Runnable{
 			}
 			
 		}
+		System.out.println("\t\tclosed the socket/port on"+streamSocket.getLocalPort());
 		streamSocket.close();
-		System.out.println("closed the socket/port on"+streamSocket.getPort());
+		
 	}
 
 	
