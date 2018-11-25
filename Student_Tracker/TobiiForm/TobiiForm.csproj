@@ -76,7 +76,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AttentionConnection.cs" />
     <Compile Include="iFocus.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>

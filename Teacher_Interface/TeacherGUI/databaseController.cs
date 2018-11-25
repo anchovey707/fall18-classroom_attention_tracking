@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Windows.Forms;
 using MySql.Data.MySqlClient;
 
@@ -8,7 +9,7 @@ namespace TeacherGUI
     public class databaseController
     {
         //probably need to pull this ip from a external config file thats eaasy to change
-        public static String databaseIP = "192.168.0.54";
+        public static String databaseIP = ConfigurationManager.AppSettings["IP"].ToString();
         public static String databaseUser = "teacher";
         public static String databasePass = "course";
         public static String databaseName = "attentiontracking";

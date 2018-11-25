@@ -24,107 +24,23 @@ namespace TobiiForm
         static System.Timers.Timer formDownTimer = new System.Timers.Timer();
         static System.Timers.Timer formUpTimer = new System.Timers.Timer();
         ServerConnection serverConnector;
-        Validator validUserCheck = new Validator();
-        //Sobject of stream class
-        private FileStream globalFileStream;
         // add to config file 
         public Int64 byteCountOfStream;
         iFocus tracker;
-        //delegate void ObjectDelegate(Object source, System.Timers.ElapsedEventArgs e);
-        public static String surveyAnswer = "100";
 
         public Form1()
         {
             Debug.WriteLine("Form1 init");
-            Init2();
+            Init();
             InitializeComponent();
-            Debug.WriteLine("spawning thread");
-            //SpawnThread();
         }
-
-        /*private void Init()
-        {
-            Debug.WriteLine("Init");
-            //adminLogin = validUserCheck.DetermineAdminLogin();//if Admin set adminLogin to true, skip further checks
-            adminLogin = true;
-
-            if (!adminLogin) validUserCheck.ValidUserNameCheck();// checks if valid user - will system exit if not
-           
-            SystemEvents.SessionEnding += new SessionEndingEventHandler(SystemEvents_SessionEnding); //EVENThandler for logout or any type of shutdown
-
-            //store file in local H: Folder, not AppData - For Non-Test scenarios
-            String systemFileLocation = "D:\\Users\\" + Environment.UserName + "\\Desktop\\eyes";
-            globalFileStream = new FileStream(systemFileLocation, FileMode.OpenOrCreate, FileAccess.ReadWrite);
-
-            Debug.WriteLine("Pre iFocus");
-            //Find which windows are open (duh)
-            
-            tracker = new iFocus(globalFileStream);
-
-            //initialize serverConnector and determines if valid
-            serverConnector = new ServerConnection(globalFileStream);
-            //Handles Validation in ServerConnection need this after establish connection to get day/time
-            if (!adminLogin) serverConnector.valid.ValidateUserBasedOnDaysTimes(serverConnector.Timestamp,serverConnector);
-            
-            iFocus.GetOpenWindows();//get initial windows up 
-            //UI location top left 
-            Point p = new Point(0, 0);
-            this.Location = p;
-
-            Debug.WriteLine("Init End");
-        }*/
    
-        private void Init2() {
-            //String systemFileLocation = "D:\\Users\\" + Environment.UserName + "\\Desktop\\eyes";
-            String systemFileLocation = "D:\\users\\Anthony\\Desktop\\eyes";
-            globalFileStream = new FileStream(systemFileLocation, FileMode.OpenOrCreate, FileAccess.ReadWrite);
-            serverConnector = new ServerConnection(globalFileStream);
+        private void Init() {
+            serverConnector = new ServerConnection();
             tracker = new iFocus(serverConnector);
             iFocus.GetOpenWindows();
         }
         
-       
-        // Will eventually move this thread spawn to a new thread class 
-        //starts thread which handles tracker writing to file and serverConnector sending data to server
-        private void SpawnThread()
-        {
-            Thread thread = new Thread(new ThreadStart(SampleIFocusAndWriteToServer));
-            thread.Start();
-        }
-        //Actual work being done by iFocus and ServerConnection
-        private void SampleIFocusAndWriteToServer()
-        {
-            while (true)
-            {//Add this note to change log
-                tracker.GazeData(tracker.Tracker);// want to still collect if server connection not made
-                serverConnector.SendDataToServer(tracker.ByteCount); // next successful server connection we dump data that was not originally sent
-                Debug.WriteLine(tracker.ByteCount);
-                Application.Exit();
-            }
-        }
-        
-
-        public FileStream GlobalFileStream { get => globalFileStream; set => globalFileStream = value; }
-        public bool AdminLogin { get => adminLogin; set => adminLogin = value; }
-
-        //Close everything when session endss (Logout event - SessionEndingEventArgs)
-        public void SystemEvents_SessionEnding(object sender, SessionEndingEventArgs e)
-        {
-            try
-            {
-                logger.Info("User has properly logged off " + DateTime.Now + "\n");
-                //serverConnector.TerminateProtocol();
-            }
-            catch
-            {
-                //Only if connection not made yet, exit anyway
-                // or tracker not set up, exit anyway as well
-            }
-            finally
-            {
-                Environment.Exit(1);
-            }
-        }
 
         //UI BELOW
         //SYSTEM TRAY AND OTHER NEW ADDITIONS
@@ -140,7 +56,7 @@ namespace TobiiForm
         { }
 
         //Procs whenever the form's state is changed
-        private void Form1_Move(object sender, EventArgs e)
+        /*private void Form1_Move(object sender, EventArgs e)
         {
             //Only change should be when minimized
             if (this.WindowState == FormWindowState.Minimized)
@@ -155,12 +71,12 @@ namespace TobiiForm
                 formDownTimer.Start();
                 this.Hide();
                 //Testing statement, for proof of it working
-                /*if (firstTime)
+                if (firstTime)
                 {
                     firstTime = false;
                     notifyIcon1.Visible = true;
                     notifyIcon1.ShowBalloonTip(1000, "Reminder!", "Don't forget to answer the survey! Click this to answer now.", ToolTipIcon.Info);
-                } */
+                } 
             }
 
             if (this.WindowState == FormWindowState.Normal)
@@ -171,7 +87,7 @@ namespace TobiiForm
                 formUpTimer.Start();
 
             }
-        }
+        }*/
 
         //When the icon is clicked, show the form again.
         /*private void notifyIcon1_MouseClick(object sender, MouseEventArgs e)
@@ -214,7 +130,7 @@ namespace TobiiForm
 
         }
 
-        private void otherOnTimedEvent(Object source, System.Timers.ElapsedEventArgs e)
+       /* private void otherOnTimedEvent(Object source, System.Timers.ElapsedEventArgs e)
         {
             if (InvokeRequired)
             {
@@ -232,12 +148,12 @@ namespace TobiiForm
         }
 
         //When balloon tip is clicked, bring up the form.
-        /*private void notifyIcon1_BalloonTipClicked(object sender, EventArgs e)
+        private void notifyIcon1_BalloonTipClicked(object sender, EventArgs e)
         {
             this.Show();
             this.WindowState = FormWindowState.Normal;
             notifyIcon1.Visible = false;
-        }*/
+        }
 
 
         private void sendButton_Click(object sender, EventArgs e)
@@ -306,7 +222,7 @@ namespace TobiiForm
                 this.WindowState = FormWindowState.Minimized;
             }
         }
-        
+        */
     }
 
 }
