@@ -262,7 +262,6 @@
             this.sendButton.TabIndex = 18;
             this.sendButton.Text = "Record";
             this.sendButton.UseVisualStyleBackColor = false;
-            this.sendButton.Click += new System.EventHandler(this.sendButton_Click);
             // 
             // label5
             // 
@@ -316,7 +315,6 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "iFocus: Attention Scale";
             this.Load += new System.EventHandler(this.Form1_Load);
-            this.Move += new System.EventHandler(this.Form1_Move);
             this.contextMenuStrip1.ResumeLayout(false);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
