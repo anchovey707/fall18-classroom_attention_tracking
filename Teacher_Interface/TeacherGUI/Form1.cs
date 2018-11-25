@@ -36,14 +36,13 @@ namespace TeacherGUI
 
                 Console.WriteLine("trying to connect");
                 tcpSocket.Connect(databaseController.databaseIP, int.Parse(ConfigurationManager.AppSettings["PORT"].ToString()));
-
+                tcpSocket.ReceiveTimeout = 2000;
                Console.WriteLine("waiting for starting char");
                 String returndata="";
-
-
+                
                 //Wait for the start char, ';'
                 while (returndata != ";") {
-                    inStream=new byte[tcpSocket.Available];
+                    inStream = new byte[tcpSocket.Available];
                     tcpSocket.Receive(inStream);
                     returndata = Encoding.ASCII.GetString(inStream);
                 }
@@ -72,6 +71,8 @@ namespace TeacherGUI
             catch (Exception e){
                 please.Text = e.StackTrace;
                 Console.WriteLine(e.StackTrace);
+                this.Close();
+                return;
             }
 
 
@@ -183,9 +184,7 @@ namespace TeacherGUI
                     if (!students.Contains(name)){
                         addStudent(name);
                     } else {
-                        //update student info
-                        if(!app.Equals(""))
-                            updateStudentApp(name,app);
+                        updateStudentApp(name,app);
                     }
                 }
             }
@@ -197,7 +196,7 @@ namespace TeacherGUI
             } else {
                 students.Add(name);
                 Console.WriteLine("Added " + name + " to the class");
-                ListViewItem item = new ListViewItem("student name");
+                ListViewItem item = new ListViewItem(databaseController.getFullName(name));
                 item.SubItems.Add(name);
                 item.SubItems.Add("");
                 listView1.Items.Add(item);
@@ -207,7 +206,7 @@ namespace TeacherGUI
             if (listView1.InvokeRequired) {
                 Invoke((MethodInvoker)delegate { this.updateStudentApp(name,app); });
             } else {
-                listView1.Items[3 + students.IndexOf(name)].SubItems[2].Text = app;
+                listView1.Items[students.IndexOf(name)].SubItems[2].Text = app;
                 
             }
 
@@ -217,13 +216,24 @@ namespace TeacherGUI
         public void heartBeat() {
             while (true) {
                 Thread.Sleep(1000);
-                tcpSocket.Send(new byte[] { 0 });
+                try {
+                    tcpSocket.Send(new byte[] { 0 });
+                }catch(Exception e) {
+                    invokeClose();
+                }
             }
         }
 
 
 
+        private void invokeClose() {
+            if (this.InvokeRequired) {
+                Invoke((MethodInvoker)delegate { this.invokeClose(); });
+            } else {
+                this.Close();
 
+            }
+        }
 
 
         private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
