@@ -52,29 +52,15 @@ namespace TobiiForm
             eyeTrackers = EyeTrackingOperations.FindAllEyeTrackers();
             if (eyeTrackers.Count == 0)
             {
-                logger.Fatal( this.GetType().Name + " Class, Eye Tracker not found " + DateTime.Now + "\n");
                 TobiiEyeTrackerProcess.Close();
                 Environment.Exit(-1);
             }
             
         }
         
-        List<JsonObject> jSonArray;
-        //Receives the gaze data
-        public void GazeData(IEyeTracker eyeTracker)
-        {
-            GetOpenWindows();
-            ByteCount = 0;
-            currentData = "";
-            jSonArray = new List<JsonObject>();
-            // Start listening to gaze data.
-            System.Threading.Thread.Sleep(1000);
-            currentData = JsonConvert.SerializeObject(jSonArray.ToArray(), Formatting.Indented);
-        }
 
         private void EyeTracker_GazeDataReceived(object sender, GazeDataEventArgs e) {
             if (eyeTrackerWait++ > eyeTrackerWaitMax) {
-                jSonArray = new List<JsonObject>();
                 // Left eye coordinates multiplied by computer width and height
                 //Remember to change 1680 based on monitor size
                 float x = (e.LeftEye.GazePoint.PositionOnDisplayArea.X) * screenWidth;
@@ -83,16 +69,11 @@ namespace TobiiForm
                 String current = "\"" + x.ToString() + ", " + y.ToString() + "\"";
                 Debug.WriteLine("X:" + x.ToString() + ", Y:" + y.ToString() + "\"");
                 // check NaN
-                if (Double.IsNaN(e.LeftEye.GazePoint.PositionOnDisplayArea.X)) {
-                    //X and Y coordinates
-                    jSonPointDataObject = new JsonObject(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"));
-                    jSonArray.Add(jSonPointDataObject);
-
+                if (Double.IsNaN(e.LeftEye.GazePoint.PositionOnDisplayArea.X))
                     return;
-                }
 
                 PointF center = new PointF(x, y);
-
+                GetOpenWindows();
                 String viewingBrowser = "";
                 foreach (Window w in openTabs) {
                     Console.WriteLine(w.GetTabInfo());

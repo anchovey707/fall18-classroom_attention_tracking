@@ -61,7 +61,7 @@ namespace TobiiForm{
             //wait for port
             String returndata = "";
             inStream = new byte[0];
-            tcpSocket.ReceiveTimeout = 1000;
+            tcpSocket.ReceiveTimeout = 500;
             while (true) {
                 try { 
                     returndata = "";
