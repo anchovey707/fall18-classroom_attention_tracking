@@ -24,13 +24,10 @@ namespace TobiiForm
         IEyeTracker tracker;
         //Data to be written to file
         static String currentData;
-        //Logger
-        private static Logger logger = LogManager.GetCurrentClassLogger();
         //List of open tabs
         static List<Window> openTabs;
         //Timer if necessary
         static Int32 byteCount;
-        static FileStream Form1FileStreamObject;
         Process tobiiEyeTrackerProcess;
         static  JsonObject jSonPointDataObject;
         //Avoid hardcoding screen dimensions - Needed as tobii returns values 0-1 x,y
@@ -41,14 +38,6 @@ namespace TobiiForm
         ServerConnection server;
     
         //Constructor
-        public iFocus(FileStream fs)
-        {
-            Debug.Write("iFocus - Started!");
-            SetEyeTrackers();
-            Form1FileStreamObject = fs;
-            tracker = eyeTrackers[0];
-        }
-
         public iFocus(ServerConnection server) {
             Debug.Write("iFocus - Started!");
             SetEyeTrackers();
@@ -81,7 +70,6 @@ namespace TobiiForm
             // Start listening to gaze data.
             System.Threading.Thread.Sleep(1000);
             currentData = JsonConvert.SerializeObject(jSonArray.ToArray(), Formatting.Indented);
-            PrintToFile(currentData);
         }
 
         private void EyeTracker_GazeDataReceived(object sender, GazeDataEventArgs e) {
@@ -106,14 +94,12 @@ namespace TobiiForm
                 PointF center = new PointF(x, y);
 
                 String viewingBrowser = "";
-                GetOpenWindows();
                 foreach (Window w in openTabs) {
                     Console.WriteLine(w.GetTabInfo());
                     Rect tempRect = w.GetRectangleInfo();
                     //Check for what is being viewed
                     if (tempRect.Left < x && x < tempRect.Right && tempRect.Top < y && tempRect.Bottom > y) {
                         //Current browser tab being viewed
-
                         viewingBrowser = w.GetTabInfo();
                        break;
                     }
@@ -123,8 +109,7 @@ namespace TobiiForm
                 String xString = x.ToString();
                 String yString = y.ToString();
 
-                //jSonPointDataObject = new JsonObject(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), xString, yString,
-                //  viewingBrowser, surveyAnswers);
+                //jSonPointDataObject = new JsonObject(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), xString, yString,viewingBrowser);
                 //jSonArray.Add(jSonPointDataObject);
                 currentData = "#" + Environment.UserName + "#" + xString + "#" + yString
                     + "#" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + "#" + viewingBrowser + ";";
@@ -132,19 +117,7 @@ namespace TobiiForm
                 eyeTrackerWait = 0;
             }
         }
-
-
-        //Print to file
-        // Seek - So always appends to end, did not immediately find append to end so went with it
-        private void PrintToFile(String Data)
-        {
-            byte[] tempOutputBytes = Encoding.ASCII.GetBytes(Data);
-            Form1FileStreamObject.Seek(0, SeekOrigin.End);
-            Form1FileStreamObject.Write(tempOutputBytes, 0, tempOutputBytes.Length);
-            ByteCount += tempOutputBytes.Length;
-        }
-
-
+        
         public struct Rect
         {
             public int Left { get; set; }

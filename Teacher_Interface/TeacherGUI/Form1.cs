@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Net;
@@ -34,7 +35,7 @@ namespace TeacherGUI
                 outStream = new byte[10025];
 
                 Console.WriteLine("trying to connect");
-                tcpSocket.Connect(databaseController.databaseIP, 61600);
+                tcpSocket.Connect(databaseController.databaseIP, int.Parse(ConfigurationManager.AppSettings["PORT"].ToString()));
 
                Console.WriteLine("waiting for starting char");
                 String returndata="";
@@ -45,14 +46,15 @@ namespace TeacherGUI
                     inStream=new byte[tcpSocket.Available];
                     tcpSocket.Receive(inStream);
                     returndata = Encoding.ASCII.GetString(inStream);
-                    Console.WriteLine("'"+returndata+"'");
                 }
                 Console.WriteLine("got start char");
                 outStream = Encoding.ASCII.GetBytes("#" + databaseController.username + "#" + course + ";");
-                //send my name and corse that I want to stream
+                
+                //send my name and course that I want to stream
                 tcpSocket.Send(outStream);
                 Console.WriteLine("waiting for port info");
-                //wait for port
+                
+                //wait for port number
                 inStream = new byte[0];
                 returndata ="";
                 while (!returndata.Contains(";")) {
@@ -60,16 +62,10 @@ namespace TeacherGUI
                     tcpSocket.Receive(inStream);
                     returndata += Encoding.ASCII.GetString(inStream);
                 }
-                Console.WriteLine("got data="+returndata);
-                Console.WriteLine(returndata.IndexOf(":"));
-                Console.WriteLine(returndata.Length);
 
-                Console.WriteLine("port=" + returndata.Substring(returndata.IndexOf(":") + 1,returndata.Length -returndata.IndexOf(":")-2));
                 returndata = returndata.Substring(returndata.IndexOf(":") + 1, returndata.Length - returndata.IndexOf(":") - 2);
-
-
+                
                 udpSocket.Bind(new IPEndPoint(IPAddress.Any,int.Parse(returndata)));
-                Console.WriteLine("Starting UDP");
                 udpThread = new Thread(ListenForPackets);udpThread.Start();
                 tcpThread = new Thread(heartBeat);tcpThread.Start();
             }
@@ -119,7 +115,7 @@ namespace TeacherGUI
            // listView2.GridLines = true;
 
             // Create three items and three sets of subitems for each item.
-            ListViewItem item1 = new ListViewItem("Austin Lambeth",0);
+            /*ListViewItem item1 = new ListViewItem("Austin Lambeth",0);
             item1.SubItems.Add("al05661");
             item1.SubItems.Add("Current Slides");
             item1.SubItems.Add("3");
@@ -130,8 +126,8 @@ namespace TeacherGUI
             ListViewItem item3 = new ListViewItem("Phillip", 1);
             item3.SubItems.Add("cool guy philip");
             item3.SubItems.Add("Current Slides");
-            item3.SubItems.Add("9");
-
+            item3.SubItems.Add("9");*/
+            
             // Create columns for the items and subitems.
             // Width of -2 indicates auto-size.
             listView1.Columns.Add("Student Name", -2, HorizontalAlignment.Left);
@@ -144,7 +140,7 @@ namespace TeacherGUI
             ListViewItem mozilla = new ListViewItem("mozilla", 0);
             //listView2.Columns.Add("Open Windows", -2, HorizontalAlignment.Left);
             //Add the items to the ListView.
-           listView1.Items.AddRange(new ListViewItem[] { item1, item2, item3 });
+            //listView1.Items.AddRange(new ListViewItem[] { item1, item2, item3 });
             //listView2.Items.AddRange(new ListViewItem[] { chrome,mozilla });
 
 
