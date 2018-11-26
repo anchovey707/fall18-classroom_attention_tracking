@@ -76,7 +76,7 @@ namespace TeacherGUI
         //adminButton
         private void button2_Click(object sender, EventArgs e)
         {
-            new AdminScreen().Show();
+            new AdminScreen(this).Show();
             Hide();
         }
 

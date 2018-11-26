@@ -9,9 +9,11 @@ namespace TeacherGUI
 {
     public partial class AdminScreen : Form
     {
-        public AdminScreen()
+        private Form parentForm;
+        public AdminScreen(Form home)
         {
             InitializeComponent();
+            parentForm = home;
         }
 
         private void SubmitProfessor_Click(object sender, EventArgs e)
@@ -55,7 +57,7 @@ namespace TeacherGUI
             databaseController.sqlQuery = "SELECT CONCAT(t.first_name, ' ', t.last_name) AS 'Professor', " +
                                                   "c.name 'Class Name', co.course_day 'Class Day', c.startTime 'Start Time' " +
                                                   "FROM course c " +
-                                                  "JOIN course_occurrence co ON c.id = co.course_id " +
+                                                  "JOIN student_courses co ON c.id = co.course_id " +
                                                   "JOIN teacher t ON c.teacher_id = t.id;";
             MySqlCommand cmd = new MySqlCommand(databaseController.sqlQuery, databaseController.conn);
             MySqlDataAdapter myAdapter = new MySqlDataAdapter();
@@ -222,6 +224,10 @@ namespace TeacherGUI
         {
             public string Name { get; set; }
             public string Value { get; set; }
+        }
+
+        private void AdminScreen_FormClosing(object sender, FormClosingEventArgs e) {
+            parentForm.Show();
         }
     }
 }

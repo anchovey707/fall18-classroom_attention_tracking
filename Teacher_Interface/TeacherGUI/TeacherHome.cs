@@ -24,13 +24,14 @@ namespace TeacherGUI
             InitializeComponent();
             
             admin = a;
-            Console.WriteLine("Admin="+admin);
             for(int i = 0; i < classes.Length; i++) {
                 Console.WriteLine(classes[i]);
             }
             selectedClass.Items.AddRange(classes);
             if(classes.Length>0)
                selectedClass.Text = classes[0];
+            if (!admin)
+                adminbtn.Hide();
         }
         
 
@@ -66,6 +67,11 @@ namespace TeacherGUI
 
         private void TeacherHome_FormClosing(object sender, FormClosingEventArgs e) {
             Application.Exit();
+        }
+
+        private void adminbtn_Click(object sender, EventArgs e) {
+            new AdminScreen(this).Show();
+            Hide();
         }
     }
 }

@@ -194,6 +194,7 @@
             this.Controls.Add(this.firstName);
             this.Name = "AdminScreen";
             this.Text = "AdminScreen";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.AdminScreen_FormClosing);
             this.Load += new System.EventHandler(this.AdminScreen_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).EndInit();
