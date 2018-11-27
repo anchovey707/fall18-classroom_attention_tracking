@@ -43,6 +43,26 @@ namespace TeacherGUI
         private void SubmitClass_Click(object sender, EventArgs e)
         {
             
+            databaseController.dbConnect();
+            databaseController.sqlQuery = "INSERT INTO course (crn, teacher_id, start_time, end_time) " +
+                                          "VALUES (@crn, @teacher_id, @startTime, @endTime)";
+            MySqlCommand cmd = new MySqlCommand(databaseController.sqlQuery, databaseController.conn);
+
+            cmd.Parameters.AddWithValue("@crn", crn.Text);
+            cmd.Parameters.AddWithValue("@teacher_id", teacher_id.Text);
+            cmd.Parameters.AddWithValue("@startTime", startTime.Text);
+            cmd.Parameters.AddWithValue("@endTime", endTime.Text);
+
+            if (cmd.ExecuteNonQuery() > 0)
+            {
+                MessageBox.Show("Class Added");
+                databaseController.conn.Close();
+            }
+            else
+            {
+                MessageBox.Show("Submission failed, please ensure you entered all data and try again.");
+                databaseController.conn.Close();
+            }
 
         }
 
@@ -53,10 +73,9 @@ namespace TeacherGUI
             //populate class dataGridView
             databaseController.dbConnect();
             databaseController.sqlQuery = "SELECT CONCAT(t.first_name, ' ', t.last_name) AS 'Professor', " +
-                                                  "c.name 'Class Name', co.course_day 'Class Day', c.startTime 'Start Time' " +
+                                                  "c.name 'Class Name', c.startTime 'Start Time' " +
                                                   "FROM course c " +
-                                                  "JOIN course_occurrence co ON c.id = co.course_id " +
-                                                  "JOIN teacher t ON c.teacher_id = t.id;";
+                                                  "JOIN teacher t ON c.teacher_id = t.login_id;";
             MySqlCommand cmd = new MySqlCommand(databaseController.sqlQuery, databaseController.conn);
             MySqlDataAdapter myAdapter = new MySqlDataAdapter();
             myAdapter.SelectCommand = cmd;
@@ -76,18 +95,18 @@ namespace TeacherGUI
             dataGridView2.DataSource = dgvDataTable;
 
             //populate professor dropdown
-            databaseController.sqlQuery = "SELECT CONCAT(first_name, ' ', last_name) AS 'Professor'" +
+            databaseController.sqlQuery = "SELECT CONCAT(first_name, ' ', last_name) AS 'Professor', login_id AS 'Username'" +
                                           "FROM teacher";
             cmd = new MySqlCommand(databaseController.sqlQuery, databaseController.conn);
             MySqlDataReader reader;
 
             reader = cmd.ExecuteReader();
             DataTable profDataTable = new DataTable();
-            profDataTable.Columns.Add("teacher_ID", typeof(int));
+            profDataTable.Columns.Add("login_id", typeof(string));
             profDataTable.Columns.Add("Professor", typeof(string));
             profDataTable.Load(reader);
 
-            comboBox1.ValueMember = "teacher_ID";
+            comboBox1.ValueMember = "login_id";
             comboBox1.DisplayMember = "Professor";
             comboBox1.DataSource = profDataTable;
             comboBox1.DropDownStyle = ComboBoxStyle.DropDownList;
@@ -113,22 +132,22 @@ namespace TeacherGUI
             password_SetText();
 
             //populate class day dropdown
-            var dataSource = new List<DayOfWeek>();
-            dataSource.Add(new DayOfWeek() { Value = "1", Name = "Monday" });
-            dataSource.Add(new DayOfWeek() { Value = "2", Name = "Tuesday" });
-            dataSource.Add(new DayOfWeek() { Value = "3", Name = "Wednesday" });
-            dataSource.Add(new DayOfWeek() { Value = "4", Name = "Thursday" });
-            dataSource.Add(new DayOfWeek() { Value = "5", Name = "Friday" });
-            dataSource.Add(new DayOfWeek() { Value = "6", Name = "Saturday" });
-            dataSource.Add(new DayOfWeek() { Value = "7", Name = "Sunday" });
+            // var dataSource = new List<DayOfWeek>();
+            // dataSource.Add(new DayOfWeek() { Value = "1", Name = "Monday" });
+            // dataSource.Add(new DayOfWeek() { Value = "2", Name = "Tuesday" });
+            // dataSource.Add(new DayOfWeek() { Value = "3", Name = "Wednesday" });
+            // dataSource.Add(new DayOfWeek() { Value = "4", Name = "Thursday" });
+            // dataSource.Add(new DayOfWeek() { Value = "5", Name = "Friday" });
+            // dataSource.Add(new DayOfWeek() { Value = "6", Name = "Saturday" });
+            // dataSource.Add(new DayOfWeek() { Value = "7", Name = "Sunday" });
 
-            //Setup data binding
-            comboBox3.DataSource    = dataSource;
-            comboBox3.DisplayMember = "Name";
-            comboBox3.ValueMember   = "Value";
+            // //Setup data binding
+            // comboBox3.DataSource    = dataSource;
+            // comboBox3.DisplayMember = "Name";
+            // comboBox3.ValueMember   = "Value";
 
             // make it readonly
-            comboBox3.DropDownStyle = ComboBoxStyle.DropDownList;
+            //comboBox3.DropDownStyle = ComboBoxStyle.DropDownList;
 
             databaseController.conn.Close();
         }
@@ -218,10 +237,10 @@ namespace TeacherGUI
 
         }
 
-        public class DayOfWeek
-        {
-            public string Name { get; set; }
-            public string Value { get; set; }
-        }
+        // public class DayOfWeek
+        // {
+        //     public string Name { get; set; }
+        //     public string Value { get; set; }
+        // }
     }
 }

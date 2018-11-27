@@ -139,9 +139,8 @@ public class ServerMain {
 				if(emptyIndex==-1){
 					if(usedPorts[i]==0)
 						emptyIndex=i;
-				}else if(port==usedPorts[i]) {
+				}if(port==usedPorts[i]) {
 					found=true;
-					break;
 				}
 			}
 		}
@@ -204,8 +203,12 @@ public class ServerMain {
 		if(database) {
 			System.out.println("Getting "+student.getUser()+"'s classes");
 			try {
-				ResultSet courses = retrieve("Select course.crn from course join student_courses" + 
-					" where course.crn=student_courses.crn and student_courses.student_id='"+student.getUser()+"';");
+				ResultSet courses = retrieve("SELECT course.crn, course.endTime - CURRENT_TIME() AS timeDiff " + 
+												"FROM course " + 
+												"JOIN student_courses " +
+												"ON course.crn=student_courses.crn " +
+												"WHERE student_courses.student_id='"+student.getUser()+"' AND course.endTime - CURRENT_TIME() > 0 " + 
+												"ORDER BY timeDiff DESC;");
 				while(courses.next()) {
 					System.out.println(courses.getInt(1));
 					student.setCourse(courses.getInt(1));	
