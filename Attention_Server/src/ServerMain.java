@@ -207,8 +207,8 @@ public class ServerMain {
 												"FROM course " + 
 												"JOIN student_courses " +
 												"ON course.crn=student_courses.crn " +
-												"WHERE student_courses.student_id='"+student.getUser()+"' " + 
-												"ORDER BY course.endTime - CURRENT_TIME() DESC;");
+												"WHERE student_courses.student_id='"+student.getUser()+"' AND course.endTime - CURRENT_TIME() > 0" + 
+												"ORDER BY timeDiff DESC;");
 				while(courses.next()) {
 					System.out.println(courses.getInt(1));
 					student.setCourse(courses.getInt(1));	
