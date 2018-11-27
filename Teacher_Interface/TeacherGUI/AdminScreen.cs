@@ -48,8 +48,6 @@ namespace TeacherGUI
                                           "VALUES (@crn, @teacher_id, @startTime, @endTime)";
             MySqlCommand cmd = new MySqlCommand(databaseController.sqlQuery, databaseController.conn);
 
-            string passwordHash = Hash.passwordHash(password.Text);
-
             cmd.Parameters.AddWithValue("@crn", crn.Text);
             cmd.Parameters.AddWithValue("@teacher_id", teacher_id.Text);
             cmd.Parameters.AddWithValue("@startTime", startTime.Text);
