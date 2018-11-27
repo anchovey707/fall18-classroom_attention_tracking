@@ -203,8 +203,12 @@ public class ServerMain {
 		if(database) {
 			System.out.println("Getting "+student.getUser()+"'s classes");
 			try {
-				ResultSet courses = retrieve("Select course.crn, course.endTime - CURRENT_TIME() AS timeDiff from course join student_courses" + 
-					" where course.crn=student_courses.crn and student_courses.student_id='"+student.getUser()+"' ORDER BY timeDiff DESC;");
+				ResultSet courses = retrieve("SELECT course.crn, course.endTime - CURRENT_TIME() AS timeDiff " + 
+												"FROM course " + 
+												"JOIN student_courses " +
+												"ON course.crn=student_courses.crn " +
+												"WHERE student_courses.student_id='"+student.getUser()+"' " + 
+												"ORDER BY course.endTime - CURRENT_TIME() DESC;");
 				while(courses.next()) {
 					System.out.println(courses.getInt(1));
 					student.setCourse(courses.getInt(1));	
