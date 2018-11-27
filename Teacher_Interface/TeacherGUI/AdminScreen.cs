@@ -43,6 +43,28 @@ namespace TeacherGUI
         private void SubmitClass_Click(object sender, EventArgs e)
         {
             
+            databaseController.dbConnect();
+            databaseController.sqlQuery = "INSERT INTO course (crn, teacher_id, start_time, end_time) " +
+                                          "VALUES (@crn, @teacher_id, @startTime, @endTime)";
+            MySqlCommand cmd = new MySqlCommand(databaseController.sqlQuery, databaseController.conn);
+
+            string passwordHash = Hash.passwordHash(password.Text);
+
+            cmd.Parameters.AddWithValue("@crn", crn.Text);
+            cmd.Parameters.AddWithValue("@teacher_id", teacher_id.Text);
+            cmd.Parameters.AddWithValue("@startTime", startTime.Text);
+            cmd.Parameters.AddWithValue("@endTime", endTime.Text);
+
+            if (cmd.ExecuteNonQuery() > 0)
+            {
+                MessageBox.Show("Class Added");
+                databaseController.conn.Close();
+            }
+            else
+            {
+                MessageBox.Show("Submission failed, please ensure you entered all data and try again.");
+                databaseController.conn.Close();
+            }
 
         }
 
