@@ -49,7 +49,7 @@ namespace TeacherGUI
                 this.Hide();
             }else{
                 MessageBox.Show("Either your username or password was incorrect. Please try again.");
-                //databaseController.conn.Close();
+                databaseController.conn.Close();
             }
             
             
