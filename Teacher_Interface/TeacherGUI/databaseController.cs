@@ -88,10 +88,9 @@ namespace TeacherGUI
             string name = "~N/A";
             try {
                 Console.WriteLine("SELECT first_name,last_name FROM student WHERE login_id = '" + username + "';");
-                MySqlDataReader reader = new MySqlCommand("SELECT first_name,last_name FROM student WHERE login_id = '" + username + "';",conn).ExecuteReader();
+                MySqlDataReader reader = new MySqlCommand("SELECT CONCAT(first_name, ' ', last_name) AS full_name FROM student WHERE login_id = '" + username + "';",conn).ExecuteReader();
                 while (reader.Read()) {
-                   name=reader.GetString("first_name");
-                   name+=" "+ reader.GetString("last_name");
+                   name=reader.GetString("full_name");
                 }
                 reader.Close();
             } catch (Exception e) {
