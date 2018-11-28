@@ -58,7 +58,7 @@ namespace TobiiForm
             
         }
         
-
+        //GAze data event handler, gets the XY,app and time, then sends it to the server
         private void EyeTracker_GazeDataReceived(object sender, GazeDataEventArgs e) {
             if (eyeTrackerWait++ > eyeTrackerWaitMax) {
                 // Left eye coordinates multiplied by computer width and height

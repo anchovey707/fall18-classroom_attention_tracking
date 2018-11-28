@@ -59,7 +59,7 @@
             this.CRNTxtBox.Location = new System.Drawing.Point(392, 108);
             this.CRNTxtBox.Name = "CRNTxtBox";
             this.CRNTxtBox.Size = new System.Drawing.Size(264, 20);
-            this.CRNTxtBox.TabIndex = 4;
+            this.CRNTxtBox.TabIndex = 7;
             // 
             // label1
             // 
@@ -68,7 +68,7 @@
             this.label1.Location = new System.Drawing.Point(8, 9);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(110, 20);
-            this.label1.TabIndex = 2;
+            this.label1.TabIndex = 22;
             this.label1.Text = "Add Professor";
             // 
             // label2
@@ -78,7 +78,7 @@
             this.label2.Location = new System.Drawing.Point(388, 9);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(81, 20);
-            this.label2.TabIndex = 5;
+            this.label2.TabIndex = 20;
             this.label2.Text = "Add Class";
             // 
             // SubmitClass
@@ -86,7 +86,7 @@
             this.SubmitClass.Location = new System.Drawing.Point(662, 106);
             this.SubmitClass.Name = "SubmitClass";
             this.SubmitClass.Size = new System.Drawing.Size(143, 23);
-            this.SubmitClass.TabIndex = 6;
+            this.SubmitClass.TabIndex = 10;
             this.SubmitClass.Text = "Submit";
             this.SubmitClass.UseVisualStyleBackColor = true;
             this.SubmitClass.Click += new System.EventHandler(this.SubmitClass_Click);
@@ -96,7 +96,7 @@
             this.SubmitProfessor.Location = new System.Drawing.Point(197, 106);
             this.SubmitProfessor.Name = "SubmitProfessor";
             this.SubmitProfessor.Size = new System.Drawing.Size(143, 23);
-            this.SubmitProfessor.TabIndex = 7;
+            this.SubmitProfessor.TabIndex = 4;
             this.SubmitProfessor.Text = "Submit";
             this.SubmitProfessor.UseVisualStyleBackColor = true;
             this.SubmitProfessor.Click += new System.EventHandler(this.SubmitProfessor_Click);
@@ -112,7 +112,7 @@
             this.TeacherListBox.Location = new System.Drawing.Point(392, 32);
             this.TeacherListBox.Name = "TeacherListBox";
             this.TeacherListBox.Size = new System.Drawing.Size(264, 21);
-            this.TeacherListBox.TabIndex = 3;
+            this.TeacherListBox.TabIndex = 5;
             this.TeacherListBox.Text = "Professor";
             // 
             // dataGridView1
@@ -121,7 +121,7 @@
             this.dataGridView1.Location = new System.Drawing.Point(392, 137);
             this.dataGridView1.Name = "dataGridView1";
             this.dataGridView1.Size = new System.Drawing.Size(519, 280);
-            this.dataGridView1.TabIndex = 11;
+            this.dataGridView1.TabIndex = 21;
             // 
             // lastName
             // 
@@ -144,35 +144,37 @@
             this.dataGridView2.Location = new System.Drawing.Point(12, 137);
             this.dataGridView2.Name = "dataGridView2";
             this.dataGridView2.Size = new System.Drawing.Size(374, 280);
-            this.dataGridView2.TabIndex = 16;
+            this.dataGridView2.TabIndex = 24;
             // 
             // EndTimePicker
             // 
             this.EndTimePicker.Location = new System.Drawing.Point(662, 69);
             this.EndTimePicker.Name = "EndTimePicker";
             this.EndTimePicker.Size = new System.Drawing.Size(143, 20);
-            this.EndTimePicker.TabIndex = 17;
+            this.EndTimePicker.TabIndex = 9;
+            this.EndTimePicker.Value = new System.DateTime(2018, 11, 28, 10, 0, 0, 0);
             // 
             // StartTimePicker
             // 
             this.StartTimePicker.Location = new System.Drawing.Point(662, 32);
             this.StartTimePicker.Name = "StartTimePicker";
             this.StartTimePicker.Size = new System.Drawing.Size(143, 20);
-            this.StartTimePicker.TabIndex = 18;
+            this.StartTimePicker.TabIndex = 8;
+            this.StartTimePicker.Value = new System.DateTime(2018, 11, 28, 9, 0, 0, 0);
             // 
             // CourseNameTextBox
             // 
             this.CourseNameTextBox.Location = new System.Drawing.Point(392, 72);
             this.CourseNameTextBox.Name = "CourseNameTextBox";
             this.CourseNameTextBox.Size = new System.Drawing.Size(264, 20);
-            this.CourseNameTextBox.TabIndex = 19;
+            this.CourseNameTextBox.TabIndex = 6;
             // 
             // LoginTxtBox
             // 
             this.LoginTxtBox.Location = new System.Drawing.Point(197, 35);
             this.LoginTxtBox.Name = "LoginTxtBox";
             this.LoginTxtBox.Size = new System.Drawing.Size(143, 20);
-            this.LoginTxtBox.TabIndex = 20;
+            this.LoginTxtBox.TabIndex = 3;
             // 
             // AdminScreen
             // 

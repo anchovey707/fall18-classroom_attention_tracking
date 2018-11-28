@@ -19,7 +19,8 @@ namespace TeacherGUI
         byte[] inStream;
         List<Student> classList=new List<Student>();
         Form teacherHome;
-        Thread tcpThread,udpThread;
+        Thread tcpThread,udpThread,mapThread;
+        Bitmap bMap;
 
         List<String> students = new List<String>();
         
@@ -37,7 +38,7 @@ namespace TeacherGUI
                 Console.WriteLine("trying to connect");
                 tcpSocket.Connect(databaseController.databaseIP, int.Parse(ConfigurationManager.AppSettings["PORT"].ToString()));
                 tcpSocket.ReceiveTimeout = 2000;
-               Console.WriteLine("waiting for starting char");
+                Console.WriteLine("waiting for starting char");
                 String returndata="";
                 
                 //Wait for the start char, ';'
@@ -67,6 +68,7 @@ namespace TeacherGUI
                 udpSocket.Bind(new IPEndPoint(IPAddress.Any,int.Parse(returndata)));
                 udpThread = new Thread(ListenForPackets);udpThread.Start();
                 tcpThread = new Thread(heartBeat);tcpThread.Start();
+                mapThread = new Thread(UpdateMap);mapThread.Start();
             }
             catch (Exception e){
                 
@@ -82,23 +84,7 @@ namespace TeacherGUI
 
 
             // Create new memory bitmap the same size as the picture box
-            Bitmap bMap = new Bitmap(pictureBox1.Width, pictureBox1.Height);
-            // Initialize random number generator
-            Random rRand = new Random();
-            // Loop variables
-            int iX;
-            int iY;
-            byte iIntense;
-            // Lets loop 500 times and create a random point each iteration
-            for (int i = 0; i < 500; i++)
-            {
-                // Pick random locations and intensity
-                iX = rRand.Next(0, 200);
-                iY = rRand.Next(0, 200);
-                iIntense = (byte)rRand.Next(0, 120);
-                // Add heat point to heat points list
-                HeatPoints.Add(new HeatPoint(iX, iY, iIntense));
-            }
+            bMap = new Bitmap(pictureBox1.Width, pictureBox1.Height);
             // Call CreateIntensityMask, give it the memory bitmap, and use it's output to set the picture box image
             pictureBox1.Image = CreateIntensityMask(bMap, HeatPoints);
 
@@ -114,20 +100,6 @@ namespace TeacherGUI
 
             // Display grid lines.
            // listView2.GridLines = true;
-
-            // Create three items and three sets of subitems for each item.
-            /*ListViewItem item1 = new ListViewItem("Austin Lambeth",0);
-            item1.SubItems.Add("al05661");
-            item1.SubItems.Add("Current Slides");
-            item1.SubItems.Add("3");
-            ListViewItem item2 = new ListViewItem("Dylan Albrecht", 1);
-            item2.SubItems.Add("fagot.net");
-            item2.SubItems.Add("something he shouldn't have open");
-            item2.SubItems.Add("6");
-            ListViewItem item3 = new ListViewItem("Phillip", 1);
-            item3.SubItems.Add("cool guy philip");
-            item3.SubItems.Add("Current Slides");
-            item3.SubItems.Add("9");*/
             
             // Create columns for the items and subitems.
             // Width of -2 indicates auto-size.
@@ -146,6 +118,15 @@ namespace TeacherGUI
 
 
         }
+
+        public void UpdateMap() {
+            HeatPoints.Clear();
+            bMap = new Bitmap(pictureBox1.Width, pictureBox1.Height);
+            foreach (Student student in classList) 
+                HeatPoints.Add(student.StHeatPoint);
+            pictureBox1.Image = CreateIntensityMask(bMap, HeatPoints);
+        }
+
 
 
         public void ListenForPackets()
@@ -245,17 +226,7 @@ namespace TeacherGUI
 
             }
         }
-
-
-        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-
-        }
-
-        private void listView1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
+        
 
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -274,11 +245,7 @@ namespace TeacherGUI
             teacherHome.Show();
         }
         private List<HeatPoint> HeatPoints = new List<HeatPoint>();
-        
-        private void button2_Click(object sender, EventArgs e)
-        {
-            
-        }
+       
         private Bitmap CreateIntensityMask(Bitmap bSurface, List<HeatPoint> aHeatPoints)
         {
             // Create new graphics surface from memory bitmap

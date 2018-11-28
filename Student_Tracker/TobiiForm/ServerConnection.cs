@@ -85,7 +85,9 @@ namespace TobiiForm{
             try {
                 if (readyToSend)
                     udpSocket.SendTo(data, new IPEndPoint(IPAddress.Parse(ip), port));
-            } catch (IOException e) {
+            } catch (Exception e) {
+                //If it did not send then it probably is no longer conencted, so try again
+                InitConnection();
             }
         }
       

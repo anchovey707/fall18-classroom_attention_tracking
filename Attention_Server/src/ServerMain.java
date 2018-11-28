@@ -4,6 +4,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,19 +59,23 @@ public class ServerMain {
 					client.start();
 					//if teacher, then add course to map, create new datagram socket for it, and update students
 					if(client.isTeacher()) {
-						teacherList.add(client);
 						int UDPport = basePort+getAvaliablePort();
-						currentCourses.put(client.getCourse(),UDPport);
 						ServerUDP UDPSocket;
-						
-						if(database)
-							UDPSocket = new ServerUDP(client.getCourse(),client.getIP(),UDPport,conn);
-						else
-							UDPSocket = new ServerUDP(client.getCourse(),client.getIP(),UDPport);
-						udpSockets.add(UDPSocket);
-						new Thread(UDPSocket).start();
-						client.updatePort(UDPport);
-						System.out.println("Students changed="+updateStudents());
+						try {
+							if(database)
+								UDPSocket = new ServerUDP(client.getCourse(),client.getIP(),UDPport,conn);
+							else
+								UDPSocket = new ServerUDP(client.getCourse(),client.getIP(),UDPport);
+							udpSockets.add(UDPSocket);
+							new Thread(UDPSocket).start();
+							client.updatePort(UDPport);
+							teacherList.add(client);
+							currentCourses.put(client.getCourse(),UDPport);
+						}catch(SocketException e) {
+							System.out.println("Teacher tried to connect, but failed");
+							removePort(UDPport);
+							client.Stop();
+						}
 					}else{
 						//else is a student and add to the list and update their port if it can
 						studentList.add(client);

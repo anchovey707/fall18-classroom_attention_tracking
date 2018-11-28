@@ -59,6 +59,9 @@ public class ServerUDP implements Runnable{
 				recievedBytes=recievedString.getBytes();
 				streamSocket.send(new DatagramPacket(recievedBytes , recievedBytes.length,ip,streamSocket.getLocalPort()));
 				//try to write the data to the database
+				Random rand = new Random();
+				recievedString="#Anthony#"+rand.nextInt(50)+"#"+rand.nextInt(50)+"#"+"2018-12-12 10:10:10:100"+"#An application";
+				
 				if(database) {
 					String user,posX,posY,time,app;
 					int index=1;

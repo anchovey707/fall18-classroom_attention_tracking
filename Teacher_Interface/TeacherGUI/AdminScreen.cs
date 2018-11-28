@@ -15,11 +15,11 @@ namespace TeacherGUI
             InitializeComponent();
             EndTimePicker.Format=DateTimePickerFormat.Time;
             StartTimePicker.Format = DateTimePickerFormat.Time;
+            databaseController.dbConnect();
         }
 
         private void SubmitProfessor_Click(object sender, EventArgs e)
         {
-            databaseController.dbConnect();
             databaseController.sqlQuery = "INSERT INTO teacher (login_id, pass, first_name, last_name) " +
                                           "VALUES (@login, @pass, @firstName, @lastName)";
             MySqlCommand cmd = new MySqlCommand(databaseController.sqlQuery, databaseController.conn);
@@ -34,12 +34,11 @@ namespace TeacherGUI
             if (cmd.ExecuteNonQuery() > 0)
             {
                 MessageBox.Show("Professor Added");
-                databaseController.conn.Close();
+                updateTeachers();
             }
             else
             {
                 MessageBox.Show("Submission failed, please ensure you entered all data and try again.");
-                databaseController.conn.Close();
             }
         }
 
@@ -47,25 +46,33 @@ namespace TeacherGUI
         {
             
             //databaseController.dbConnect();
-            databaseController.sqlQuery = "INSERT INTO course (crn, teacher_id, start_time, end_time) " +
-                                          "VALUES (@crn, @teacher_id, @startTime, @endTime)";
+            databaseController.sqlQuery = "INSERT INTO course (crn, teacher_id, name, startTime, endTime) " +
+                                          "VALUES (@crn, @teacher_id, @name, @startTime, @endTime);";
             MySqlCommand cmd = new MySqlCommand(databaseController.sqlQuery, databaseController.conn);
-
+            string starttime = StartTimePicker.Value.Hour + ":" + StartTimePicker.Value.Minute + ":" + StartTimePicker.Value.Second;
+            string endtime = EndTimePicker.Value.Hour + ":" + EndTimePicker.Value.Minute + ":" + EndTimePicker.Value.Second;
+            if (StartTimePicker.Value.Hour < 10)
+                starttime = "0" + starttime;
+            if (EndTimePicker.Value.Hour < 10)
+                endtime = "0" + endtime;
             cmd.Parameters.AddWithValue("@crn", CRNTxtBox.Text);
-            cmd.Parameters.AddWithValue("@teacher_id", TeacherListBox.Text);
-            cmd.Parameters.AddWithValue("@startTime", StartTimePicker.Value.Hour + ":" + StartTimePicker.Value.Minute + ":" + StartTimePicker.Value.Second);
-            cmd.Parameters.AddWithValue("@endTime", EndTimePicker.Value.Hour + ":" + EndTimePicker.Value.Minute + ":" + EndTimePicker.Value.Second);
-            Console.WriteLine(cmd);
+            cmd.Parameters.AddWithValue("@teacher_id", TeacherListBox.SelectedValue);
+            cmd.Parameters.AddWithValue("@name", CourseNameTextBox.Text);
+            cmd.Parameters.AddWithValue("@startTime",starttime);
+            cmd.Parameters.AddWithValue("@endTime",endtime );
             
+            cmd.CommandText= "INSERT INTO course (crn, teacher_id, name, startTime, endTime) " +
+                                          "VALUES ("+ CRNTxtBox.Text + ", '"+ TeacherListBox.SelectedValue+"',' "
+                                          +CourseNameTextBox.Text+"','"+starttime + "', '"+endtime+"');";
+            Console.WriteLine(cmd.CommandText);
             if (cmd.ExecuteNonQuery() > 0)
             {
                 MessageBox.Show("Class Added");
-                databaseController.conn.Close();
+                updateClasses();
             }
             else
             {
                 MessageBox.Show("Submission failed, please ensure you entered all data and try again.");
-                databaseController.conn.Close();
             }
 
         }
@@ -74,46 +81,9 @@ namespace TeacherGUI
         private void AdminScreen_Load(object sender, EventArgs e)
         {
 
-            //populate class dataGridView
-            databaseController.dbConnect();
-            databaseController.sqlQuery = "SELECT CONCAT(t.first_name, ' ', t.last_name) AS 'Professor', " +
-                                                  "c.name 'Class Name', c.startTime 'Start Time' " +
-                                                  "FROM course c " +
-                                                  "JOIN teacher t ON c.teacher_id = t.login_id;";
-            MySqlCommand cmd = new MySqlCommand(databaseController.sqlQuery, databaseController.conn);
-            MySqlDataAdapter myAdapter = new MySqlDataAdapter();
-            myAdapter.SelectCommand = cmd;
-            DataTable dgvDataTable = new DataTable();
-            myAdapter.Fill(dgvDataTable);
-            dataGridView1.DataSource = dgvDataTable;
+            updateClasses();
 
-            //populate professor dataGridView
-            databaseController.sqlQuery = "SELECT CONCAT(t.first_name, ' ', t.last_name) AS 'Professor', " +
-                                                  "login_id AS 'Username'" +
-                                          "FROM teacher t;";
-            cmd = new MySqlCommand(databaseController.sqlQuery, databaseController.conn);
-            myAdapter = new MySqlDataAdapter();
-            myAdapter.SelectCommand = cmd;
-            dgvDataTable = new DataTable();
-            myAdapter.Fill(dgvDataTable);
-            dataGridView2.DataSource = dgvDataTable;
-
-            //populate professor dropdown
-            databaseController.sqlQuery = "SELECT CONCAT(first_name, ' ', last_name) AS 'Professor', login_id AS 'Username'" +
-                                          "FROM teacher";
-            cmd = new MySqlCommand(databaseController.sqlQuery, databaseController.conn);
-            MySqlDataReader reader;
-
-            reader = cmd.ExecuteReader();
-            DataTable profDataTable = new DataTable();
-            profDataTable.Columns.Add("login_id", typeof(string));
-            profDataTable.Columns.Add("Professor", typeof(string));
-            profDataTable.Load(reader);
-
-            TeacherListBox.ValueMember = "login_id";
-            TeacherListBox.DisplayMember = "Professor";
-            TeacherListBox.DataSource = profDataTable;
-            TeacherListBox.DropDownStyle = ComboBoxStyle.DropDownList;
+            updateTeachers();
 
             //Class Name textbox
             CourseNameTextBox.Enter += new EventHandler(textBox1_Enter);
@@ -142,10 +112,54 @@ namespace TeacherGUI
             CRNTxtBox.Enter += new EventHandler(CRNTxtBox_Enter);
             CRNTxtBox.Leave += new EventHandler(CRNTxtBox_Leave);
             CRNTxtBox_SetText();
-
-
-            databaseController.conn.Close();
+            
         }
+
+        public void updateTeachers() {
+            //populate professor dataGridView
+            databaseController.sqlQuery = "SELECT CONCAT(t.first_name, ' ', t.last_name) AS 'Professor', " +
+                                                  "login_id" +
+                                          " FROM teacher t;";
+            MySqlCommand cmd = new MySqlCommand(databaseController.sqlQuery, databaseController.conn);
+            MySqlDataAdapter myAdapter = new MySqlDataAdapter();
+            myAdapter.SelectCommand = cmd;
+            DataTable dgvDataTable = new DataTable();
+            myAdapter.Fill(dgvDataTable);
+            dataGridView2.DataSource = dgvDataTable;
+
+            //populate professor dropdown
+            databaseController.sqlQuery = "SELECT CONCAT(first_name, ' ', last_name) AS 'Professor', login_id " +
+                                          "FROM teacher";
+            cmd = new MySqlCommand(databaseController.sqlQuery, databaseController.conn);
+            MySqlDataReader reader;
+
+            reader = cmd.ExecuteReader();
+            DataTable profDataTable = new DataTable();
+            profDataTable.Columns.Add("login_id", typeof(string));
+            profDataTable.Columns.Add("Professor", typeof(string));
+            profDataTable.Load(reader);
+
+            TeacherListBox.ValueMember = "login_id";
+            TeacherListBox.DisplayMember = "Professor";
+            TeacherListBox.DataSource = profDataTable;
+            TeacherListBox.DropDownStyle = ComboBoxStyle.DropDownList;
+            
+        }
+
+        public void updateClasses() {
+            //populate class dataGridView
+            databaseController.sqlQuery = "SELECT CONCAT(t.first_name, ' ', t.last_name) AS 'Professor', " +
+                                                  "c.name 'Class Name', c.startTime 'Start Time' " +
+                                                  "FROM course c " +
+                                                  "JOIN teacher t ON c.teacher_id = t.login_id;";
+            MySqlCommand cmd = new MySqlCommand(databaseController.sqlQuery, databaseController.conn);
+            MySqlDataAdapter myAdapter = new MySqlDataAdapter();
+            myAdapter.SelectCommand = cmd;
+            DataTable dgvDataTable = new DataTable();
+            myAdapter.Fill(dgvDataTable);
+            dataGridView1.DataSource = dgvDataTable;
+        }
+
 
         //code from https://stackoverflow.com/questions/14544135/how-to-gray-out-default-text-in-textbox
         protected void textBox1_SetText()
@@ -262,6 +276,7 @@ namespace TeacherGUI
         }
 
         private void AdminScreen_FormClosing(object sender, FormClosingEventArgs e) {
+            databaseController.conn.Close();
             parentForm.Show();
         }
     }
