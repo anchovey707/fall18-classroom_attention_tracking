@@ -7,11 +7,14 @@ using MySql.Data.MySqlClient;
 
 namespace TeacherGUI
 {
-    public partial class AdminScreen : Form
-    {
-        public AdminScreen()
+    public partial class AdminScreen : Form{
+        public Form parentForm;
+        public AdminScreen(Form home)
         {
+            parentForm=home;
             InitializeComponent();
+            EndTimePicker.Format=DateTimePickerFormat.Time;
+            StartTimePicker.Format = DateTimePickerFormat.Time;
         }
 
         private void SubmitProfessor_Click(object sender, EventArgs e)
@@ -23,7 +26,7 @@ namespace TeacherGUI
 
             string passwordHash = Hash.passwordHash(password.Text);
 
-            cmd.Parameters.AddWithValue("@login", Environment.UserName);
+            cmd.Parameters.AddWithValue("@login", LoginTxtBox.Text);
             cmd.Parameters.AddWithValue("@pass", passwordHash);
             cmd.Parameters.AddWithValue("@firstName", firstName.Text);
             cmd.Parameters.AddWithValue("@lastName", lastName.Text);
@@ -43,16 +46,17 @@ namespace TeacherGUI
         private void SubmitClass_Click(object sender, EventArgs e)
         {
             
-            databaseController.dbConnect();
+            //databaseController.dbConnect();
             databaseController.sqlQuery = "INSERT INTO course (crn, teacher_id, start_time, end_time) " +
                                           "VALUES (@crn, @teacher_id, @startTime, @endTime)";
             MySqlCommand cmd = new MySqlCommand(databaseController.sqlQuery, databaseController.conn);
 
-            cmd.Parameters.AddWithValue("@crn", crn.Text);
-            cmd.Parameters.AddWithValue("@teacher_id", teacher_id.Text);
-            cmd.Parameters.AddWithValue("@startTime", startTime.Text);
-            cmd.Parameters.AddWithValue("@endTime", endTime.Text);
-
+            cmd.Parameters.AddWithValue("@crn", CRNTxtBox.Text);
+            cmd.Parameters.AddWithValue("@teacher_id", TeacherListBox.Text);
+            cmd.Parameters.AddWithValue("@startTime", StartTimePicker.Value.Hour + ":" + StartTimePicker.Value.Minute + ":" + StartTimePicker.Value.Second);
+            cmd.Parameters.AddWithValue("@endTime", EndTimePicker.Value.Hour + ":" + EndTimePicker.Value.Minute + ":" + EndTimePicker.Value.Second);
+            Console.WriteLine(cmd);
+            
             if (cmd.ExecuteNonQuery() > 0)
             {
                 MessageBox.Show("Class Added");
@@ -106,14 +110,14 @@ namespace TeacherGUI
             profDataTable.Columns.Add("Professor", typeof(string));
             profDataTable.Load(reader);
 
-            comboBox1.ValueMember = "login_id";
-            comboBox1.DisplayMember = "Professor";
-            comboBox1.DataSource = profDataTable;
-            comboBox1.DropDownStyle = ComboBoxStyle.DropDownList;
+            TeacherListBox.ValueMember = "login_id";
+            TeacherListBox.DisplayMember = "Professor";
+            TeacherListBox.DataSource = profDataTable;
+            TeacherListBox.DropDownStyle = ComboBoxStyle.DropDownList;
 
             //Class Name textbox
-            textBox1.Enter += new EventHandler(textBox1_Enter);
-            textBox1.Leave += new EventHandler(textBox1_Leave);
+            CourseNameTextBox.Enter += new EventHandler(textBox1_Enter);
+            CourseNameTextBox.Leave += new EventHandler(textBox1_Leave);
             textBox1_SetText();
 
             //First Name textbox
@@ -131,23 +135,14 @@ namespace TeacherGUI
             password.Leave += new EventHandler(password_Leave);
             password_SetText();
 
-            //populate class day dropdown
-            // var dataSource = new List<DayOfWeek>();
-            // dataSource.Add(new DayOfWeek() { Value = "1", Name = "Monday" });
-            // dataSource.Add(new DayOfWeek() { Value = "2", Name = "Tuesday" });
-            // dataSource.Add(new DayOfWeek() { Value = "3", Name = "Wednesday" });
-            // dataSource.Add(new DayOfWeek() { Value = "4", Name = "Thursday" });
-            // dataSource.Add(new DayOfWeek() { Value = "5", Name = "Friday" });
-            // dataSource.Add(new DayOfWeek() { Value = "6", Name = "Saturday" });
-            // dataSource.Add(new DayOfWeek() { Value = "7", Name = "Sunday" });
+            LoginTxtBox.Enter += new EventHandler(LoginTxtBox_Enter);
+            LoginTxtBox.Leave += new EventHandler(LoginTxtBox_Leave);
+            LoginTxtBox_SetText();
 
-            // //Setup data binding
-            // comboBox3.DataSource    = dataSource;
-            // comboBox3.DisplayMember = "Name";
-            // comboBox3.ValueMember   = "Value";
+            CRNTxtBox.Enter += new EventHandler(CRNTxtBox_Enter);
+            CRNTxtBox.Leave += new EventHandler(CRNTxtBox_Leave);
+            CRNTxtBox_SetText();
 
-            // make it readonly
-            //comboBox3.DropDownStyle = ComboBoxStyle.DropDownList;
 
             databaseController.conn.Close();
         }
@@ -155,20 +150,20 @@ namespace TeacherGUI
         //code from https://stackoverflow.com/questions/14544135/how-to-gray-out-default-text-in-textbox
         protected void textBox1_SetText()
         {
-            this.textBox1.Text = "Class Name";
-            textBox1.ForeColor = Color.Gray;
+            this.CourseNameTextBox.Text = "Class Name";
+            CourseNameTextBox.ForeColor = Color.Gray;
         }
 
         private void textBox1_Enter(object sender, EventArgs e)
         {
-            if (textBox1.ForeColor == Color.Black)
+            if (CourseNameTextBox.ForeColor == Color.Black)
                 return;
-            textBox1.Text = "";
-            textBox1.ForeColor = Color.Black;
+            CourseNameTextBox.Text = "";
+            CourseNameTextBox.ForeColor = Color.Black;
         }
         private void textBox1_Leave(object sender, EventArgs e)
         {
-            if (textBox1.Text.Trim() == "")
+            if (CourseNameTextBox.Text.Trim() == "")
                 textBox1_SetText();
         }
 
@@ -232,15 +227,42 @@ namespace TeacherGUI
                 password_SetText();
         }
 
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
+        //Login text box
+        protected void LoginTxtBox_SetText() {
+            this.LoginTxtBox.Text = "Login id";
+            LoginTxtBox.ForeColor = Color.Gray;
         }
 
-        // public class DayOfWeek
-        // {
-        //     public string Name { get; set; }
-        //     public string Value { get; set; }
-        // }
+        private void LoginTxtBox_Enter(object sender, EventArgs e) {
+            if (LoginTxtBox.ForeColor == Color.Black)
+                return;
+            LoginTxtBox.Text = "";
+            LoginTxtBox.ForeColor = Color.Black;
+        }
+        private void LoginTxtBox_Leave(object sender, EventArgs e) {
+            if (LoginTxtBox.Text.Trim() == "")
+                LoginTxtBox_SetText();
+        }
+
+        //CRN text box
+        protected void CRNTxtBox_SetText() {
+            this.CRNTxtBox.Text = "CRN";
+            CRNTxtBox.ForeColor = Color.Gray;
+        }
+
+        private void CRNTxtBox_Enter(object sender, EventArgs e) {
+            if (CRNTxtBox.ForeColor == Color.Black)
+                return;
+            CRNTxtBox.Text = "";
+            CRNTxtBox.ForeColor = Color.Black;
+        }
+        private void CRNTxtBox_Leave(object sender, EventArgs e) {
+            if (CRNTxtBox.Text.Trim() == "")
+                CRNTxtBox_SetText();
+        }
+
+        private void AdminScreen_FormClosing(object sender, FormClosingEventArgs e) {
+            parentForm.Show();
+        }
     }
 }

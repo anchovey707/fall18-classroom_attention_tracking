@@ -17,7 +17,7 @@ namespace TeacherGUI
         public Socket tcpSocket,udpSocket;
         byte[] outStream;
         byte[] inStream;
-        
+        List<Student> classList=new List<Student>();
         Form teacherHome;
         Thread tcpThread,udpThread;
 
@@ -69,7 +69,7 @@ namespace TeacherGUI
                 tcpThread = new Thread(heartBeat);tcpThread.Start();
             }
             catch (Exception e){
-                please.Text = e.StackTrace;
+                
                 Console.WriteLine(e.StackTrace);
                 this.Close();
                 return;
@@ -186,6 +186,16 @@ namespace TeacherGUI
                     } else {
                         updateStudentApp(name,app);
                     }
+                    HeatPoint newHeat = new HeatPoint(int.Parse(posX), int.Parse(posY), byte.MaxValue / 2);
+                    foreach(Student student in classList)
+                    {
+                        if (student.getName() == name)
+                        {
+                            Student temp=classList.GetEnumerator().Current;
+                            temp.StHeatPoint = newHeat;
+                        }
+                    }
+                        
                 }
             }
         }
@@ -200,6 +210,7 @@ namespace TeacherGUI
                 item.SubItems.Add(name);
                 item.SubItems.Add("");
                 listView1.Items.Add(item);
+                classList.Add(new Student(name));
             }
         }
         public void updateStudentApp(string name,string app) {
@@ -266,46 +277,7 @@ namespace TeacherGUI
         
         private void button2_Click(object sender, EventArgs e)
         {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            /*
-            // Create new memory bitmap the same size as the picture box
-            Bitmap bMap = new Bitmap(pictureBox1.Width, pictureBox1.Height);
-            // Initialize random number generator
-            Random rRand = new Random();
-            // Loop variables
-            int iX;
-            int iY;
-            byte iIntense;
-            // Lets loop 500 times and create a random point each iteration
-            for (int i = 0; i < 500; i++)
-            {
-                // Pick random locations and intensity
-                iX = rRand.Next(0, 200);
-                iY = rRand.Next(0, 200);
-                iIntense = (byte)rRand.Next(0, 120);
-                // Add heat point to heat points list
-                HeatPoints.Add(new HeatPoint(iX, iY, iIntense));
-            }
-            // Call CreateIntensityMask, give it the memory bitmap, and use it's output to set the picture box image
-            pictureBox1.Image = CreateIntensityMask(bMap, HeatPoints);
-            */
+            
         }
         private Bitmap CreateIntensityMask(Bitmap bSurface, List<HeatPoint> aHeatPoints)
         {
@@ -314,10 +286,10 @@ namespace TeacherGUI
             // Set background color to white so that pixels can be correctly colorized
             DrawSurface.Clear(Color.White);
             // Traverse heat point data and draw masks for each heat point
-            foreach (HeatPoint DataPoint in aHeatPoints)
+            foreach (Student student in classList)
             {
                 // Render current heat point on draw surface
-                DrawHeatPoint(DrawSurface, DataPoint, 15);
+                DrawHeatPoint(DrawSurface, student.StHeatPoint, 15);
             }
             return bSurface;
         }
@@ -397,5 +369,20 @@ namespace TeacherGUI
             Intensity = bIntensity;
         }
     }
+    public struct Student
+    {
+        public HeatPoint StHeatPoint;
+        public String name;
+        public Student(String name1)
+        {
+            this.name = name1;
+            StHeatPoint = new HeatPoint();
+        }
+        public String getName()
+        {
+            return this.name;
+        }
+    }
+
 }
 

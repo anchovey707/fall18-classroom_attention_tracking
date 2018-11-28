@@ -71,15 +71,7 @@ namespace TeacherGUI
 
             this.AcceptButton = button1;
         }
-
-
-        //adminButton
-        private void button2_Click(object sender, EventArgs e)
-        {
-            new AdminScreen().Show();
-            Hide();
-        }
-
+        
         //Username
         protected void username_SetText()
         {

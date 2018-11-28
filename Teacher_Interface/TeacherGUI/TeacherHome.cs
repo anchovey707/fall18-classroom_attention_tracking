@@ -72,5 +72,10 @@ namespace TeacherGUI
         private void TeacherHome_FormClosing(object sender, FormClosingEventArgs e) {
             Application.Exit();
         }
+
+        private void adminbtn_Click(object sender, EventArgs e) {
+            new AdminScreen(this).Show();
+            Hide();
+        }
     }
 }
