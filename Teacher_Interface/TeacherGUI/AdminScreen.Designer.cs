@@ -29,18 +29,19 @@
         private void InitializeComponent()
         {
             this.firstName = new System.Windows.Forms.TextBox();
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.courseName = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.SubmitClass = new System.Windows.Forms.Button();
             this.SubmitProfessor = new System.Windows.Forms.Button();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.teacher_id = new System.Windows.Forms.ComboBox();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.lastName = new System.Windows.Forms.TextBox();
             this.password = new System.Windows.Forms.TextBox();
-            this.comboBox2 = new System.Windows.Forms.ComboBox();
-            this.comboBox3 = new System.Windows.Forms.ComboBox();
+            this.endTime = new System.Windows.Forms.ComboBox();
             this.dataGridView2 = new System.Windows.Forms.DataGridView();
+            this.startTime = new System.Windows.Forms.ComboBox();
+            this.crn = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).BeginInit();
             this.SuspendLayout();
@@ -52,12 +53,12 @@
             this.firstName.Size = new System.Drawing.Size(260, 20);
             this.firstName.TabIndex = 0;
             // 
-            // textBox1
+            // courseName
             // 
-            this.textBox1.Location = new System.Drawing.Point(645, 59);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(264, 20);
-            this.textBox1.TabIndex = 4;
+            this.courseName.Location = new System.Drawing.Point(645, 59);
+            this.courseName.Name = "courseName";
+            this.courseName.Size = new System.Drawing.Size(264, 20);
+            this.courseName.TabIndex = 4;
             // 
             // label1
             // 
@@ -81,7 +82,7 @@
             // 
             // SubmitClass
             // 
-            this.SubmitClass.Location = new System.Drawing.Point(944, 108);
+            this.SubmitClass.Location = new System.Drawing.Point(876, 108);
             this.SubmitClass.Name = "SubmitClass";
             this.SubmitClass.Size = new System.Drawing.Size(79, 23);
             this.SubmitClass.TabIndex = 6;
@@ -99,20 +100,20 @@
             this.SubmitProfessor.UseVisualStyleBackColor = true;
             this.SubmitProfessor.Click += new System.EventHandler(this.SubmitProfessor_Click);
             // 
-            // comboBox1
+            // teacher_id
             // 
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Items.AddRange(new object[] {
+            this.teacher_id.FormattingEnabled = true;
+            this.teacher_id.Items.AddRange(new object[] {
             "De",
             "Allan",
             "Zhang",
             "Master Chief"});
-            this.comboBox1.Location = new System.Drawing.Point(645, 32);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(264, 21);
-            this.comboBox1.TabIndex = 3;
-            this.comboBox1.Text = "Professor";
-            this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
+            this.teacher_id.Location = new System.Drawing.Point(645, 32);
+            this.teacher_id.Name = "teacher_id";
+            this.teacher_id.Size = new System.Drawing.Size(264, 21);
+            this.teacher_id.TabIndex = 3;
+            this.teacher_id.Text = "Professor";
+            this.teacher_id.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
             // 
             // dataGridView1
             // 
@@ -137,34 +138,19 @@
             this.password.TabIndex = 2;
             this.password.UseSystemPasswordChar = true;
             // 
-            // comboBox2
+            // endTime
             // 
-            this.comboBox2.FormattingEnabled = true;
-            this.comboBox2.Items.AddRange(new object[] {
+            this.endTime.FormattingEnabled = true;
+            this.endTime.Items.AddRange(new object[] {
             "De",
             "Allan",
             "Zhang",
             "Master Chief"});
-            this.comboBox2.Location = new System.Drawing.Point(645, 110);
-            this.comboBox2.Name = "comboBox2";
-            this.comboBox2.Size = new System.Drawing.Size(264, 21);
-            this.comboBox2.TabIndex = 6;
-            this.comboBox2.Text = "Time";
-            // 
-            // comboBox3
-            // 
-            this.comboBox3.FormattingEnabled = true;
-            this.comboBox3.Items.AddRange(new object[] {
-            "De",
-            "Allan",
-            "Zhang",
-            "Master Chief"});
-            this.comboBox3.Location = new System.Drawing.Point(645, 85);
-            this.comboBox3.Name = "comboBox3";
-            this.comboBox3.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.comboBox3.Size = new System.Drawing.Size(264, 21);
-            this.comboBox3.TabIndex = 5;
-            this.comboBox3.Text = "Day";
+            this.endTime.Location = new System.Drawing.Point(915, 85);
+            this.endTime.Name = "endTime";
+            this.endTime.Size = new System.Drawing.Size(264, 21);
+            this.endTime.TabIndex = 6;
+            this.endTime.Text = "End Time";
             // 
             // dataGridView2
             // 
@@ -174,23 +160,46 @@
             this.dataGridView2.Size = new System.Drawing.Size(627, 280);
             this.dataGridView2.TabIndex = 16;
             // 
+            // startTime
+            // 
+            this.startTime.FormattingEnabled = true;
+            this.startTime.Items.AddRange(new object[] {
+            "De",
+            "Allan",
+            "Zhang",
+            "Master Chief"});
+            this.startTime.Location = new System.Drawing.Point(645, 85);
+            this.startTime.Name = "startTime";
+            this.startTime.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.startTime.Size = new System.Drawing.Size(264, 21);
+            this.startTime.TabIndex = 5;
+            this.startTime.Text = "Start Time";
+            // 
+            // crn
+            // 
+            this.crn.Location = new System.Drawing.Point(915, 59);
+            this.crn.Name = "crn";
+            this.crn.Size = new System.Drawing.Size(264, 20);
+            this.crn.TabIndex = 17;
+            // 
             // AdminScreen
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1279, 567);
+            this.Controls.Add(this.crn);
             this.Controls.Add(this.dataGridView2);
-            this.Controls.Add(this.comboBox3);
-            this.Controls.Add(this.comboBox2);
+            this.Controls.Add(this.startTime);
+            this.Controls.Add(this.endTime);
             this.Controls.Add(this.password);
             this.Controls.Add(this.lastName);
             this.Controls.Add(this.dataGridView1);
-            this.Controls.Add(this.comboBox1);
+            this.Controls.Add(this.teacher_id);
             this.Controls.Add(this.SubmitProfessor);
             this.Controls.Add(this.SubmitClass);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.textBox1);
+            this.Controls.Add(this.courseName);
             this.Controls.Add(this.firstName);
             this.Name = "AdminScreen";
             this.Text = "AdminScreen";
@@ -205,17 +214,18 @@
         #endregion
 
         private System.Windows.Forms.TextBox firstName;
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.TextBox courseName;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button SubmitClass;
         private System.Windows.Forms.Button SubmitProfessor;
-        private System.Windows.Forms.ComboBox comboBox1;
+        private System.Windows.Forms.ComboBox teacher_id;
         private System.Windows.Forms.DataGridView dataGridView1;
         private System.Windows.Forms.TextBox lastName;
         private System.Windows.Forms.TextBox password;
-        private System.Windows.Forms.ComboBox comboBox2;
-        private System.Windows.Forms.ComboBox comboBox3;
+        private System.Windows.Forms.ComboBox endTime;
         private System.Windows.Forms.DataGridView dataGridView2;
+        private System.Windows.Forms.ComboBox startTime;
+        private System.Windows.Forms.TextBox crn;
     }
 }
