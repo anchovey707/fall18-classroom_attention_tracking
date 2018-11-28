@@ -23,7 +23,8 @@ namespace TeacherGUI
         Bitmap bMap;
 
         List<String> students = new List<String>();
-        
+        bool editClassSync = false;
+
         public Form1(Form f,int course)
         {
             teacherHome = f;
@@ -120,11 +121,20 @@ namespace TeacherGUI
         }
 
         public void UpdateMap() {
-            HeatPoints.Clear();
-            bMap = new Bitmap(pictureBox1.Width, pictureBox1.Height);
-            foreach (Student student in classList) 
-                HeatPoints.Add(student.StHeatPoint);
-            pictureBox1.Image = CreateIntensityMask(bMap, HeatPoints);
+            while (true)
+            {
+                Thread.Sleep(200);
+                Console.WriteLine("Map");
+                //HeatPoints.Clear();
+                bMap = new Bitmap(pictureBox1.Width, pictureBox1.Height);
+                foreach (Student student in classList) {
+                    if (editClassSync)
+                        break;
+                    HeatPoints.Add(student.StHeatPoint);
+                }
+                pictureBox1.Image = CreateIntensityMask(bMap, HeatPoints);
+                
+            }
         }
 
 
@@ -163,17 +173,27 @@ namespace TeacherGUI
                     else
                         app = "";
                     if (!students.Contains(name)){
-                        addStudent(name);
+                        if (listView1.InvokeRequired) {
+                            editClassSync = true;
+                            addStudent(name);
+                        }
                     } else {
                         updateStudentApp(name,app);
                     }
-                    HeatPoint newHeat = new HeatPoint(int.Parse(posX), int.Parse(posY), byte.MaxValue / 2);
-                    foreach(Student student in classList)
+                    HeatPoint newHeat = new HeatPoint(int.Parse(posX), int.Parse(posY), byte.MaxValue );
+                    Console.WriteLine(newHeat.X + " ;" + newHeat.Y);
+                    for(int i= 0; i < classList.Count; i++)
                     {
-                        if (student.getName() == name)
+                        if (classList[i].getName()==name)
                         {
-                            Student temp=classList.GetEnumerator().Current;
-                            temp.StHeatPoint = newHeat;
+                            classList[i].setHP(newHeat);
+                            Console.WriteLine(newHeat.X);
+                            Console.WriteLine(classList[i].getName());
+                            Console.WriteLine(classList[0].getName());
+
+                            Console.WriteLine(classList[0].getHP().X);
+                            Console.WriteLine(classList[i].getHP().X);
+                            Console.WriteLine(classList.ToString());
                         }
                     }
                         
@@ -182,9 +202,32 @@ namespace TeacherGUI
         }
 
         public void addStudent(string name) {
-            if (listView1.InvokeRequired) {
-                Invoke((MethodInvoker)delegate { this.addStudent(name); });
-            } else {
+            Console.WriteLine(listView1.InvokeRequired);
+            if (listView1.InvokeRequired)
+            {
+                Invoke((MethodInvoker)delegate { Console.WriteLine("Invoke Required!!!!!!!!!!!!!!!!!!!!!!!!!1"); this.addStudent(name); });
+            }
+            else
+            {
+                students.Add(name);
+                Console.WriteLine("Added " + name + " to the class");
+                ListViewItem item = new ListViewItem(databaseController.getFullName(name));
+                item.SubItems.Add(name);
+                item.SubItems.Add("");
+                listView1.Items.Add(item);
+                classList.Add(new Student(name));
+                editClassSync = false;
+            }
+        }
+        public void addStudentOld(string name)
+        {
+            Console.WriteLine(listView1.InvokeRequired);
+            if (listView1.InvokeRequired)
+            {
+                Invoke((MethodInvoker)delegate { Console.WriteLine("Invoke Required!!!!!!!!!!!!!!!!!!!!!!!!!1"); this.addStudent(name); });
+            }
+            else
+            {
                 students.Add(name);
                 Console.WriteLine("Added " + name + " to the class");
                 ListViewItem item = new ListViewItem(databaseController.getFullName(name));
@@ -240,9 +283,11 @@ namespace TeacherGUI
             //need to stop thread as well
             tcpThread.Abort();
             udpThread.Abort();
+            mapThread.Abort();
             tcpSocket.Close();
             udpSocket.Close();
             teacherHome.Show();
+            
         }
         private List<HeatPoint> HeatPoints = new List<HeatPoint>();
        
@@ -253,10 +298,20 @@ namespace TeacherGUI
             // Set background color to white so that pixels can be correctly colorized
             DrawSurface.Clear(Color.White);
             // Traverse heat point data and draw masks for each heat point
-            foreach (Student student in classList)
+            try
             {
-                // Render current heat point on draw surface
-                DrawHeatPoint(DrawSurface, student.StHeatPoint, 15);
+                foreach (Student student in classList)
+                {
+                    // Render current heat point on draw surface
+                    Console.WriteLine("Im in the create map");
+                    Console.WriteLine(student.getHP().X);
+                    Console.WriteLine(student.getHP().Y);
+                    DrawHeatPoint(DrawSurface, student.getHP(), 25);
+                }
+            }
+            catch(Exception e)
+            {
+
             }
             return bSurface;
         }
@@ -336,7 +391,7 @@ namespace TeacherGUI
             Intensity = bIntensity;
         }
     }
-    public struct Student
+    public class Student
     {
         public HeatPoint StHeatPoint;
         public String name;
@@ -348,6 +403,16 @@ namespace TeacherGUI
         public String getName()
         {
             return this.name;
+        }
+        public void setHP(HeatPoint heat)
+        {
+            Console.WriteLine(heat.X);
+            this.StHeatPoint = heat;
+            Console.WriteLine(this.StHeatPoint.X);
+        }
+        public HeatPoint getHP()
+        {
+            return this.StHeatPoint;
         }
     }
 

@@ -28,6 +28,7 @@ public class ServerMain {
 	static int basePort=61600;
 	static int[] usedPorts = new int[] {0,0,0};
 	
+	
 	static boolean database=false;
 	
 	//Database vars
@@ -38,7 +39,7 @@ public class ServerMain {
 			//ServerSocket to accept new TCP socket connections for clients(teachers and students)
 			ServerSocket server = new ServerSocket(basePort);
 			//Setting a timeout so that the serve has a chance to remove unused ports and clientConnections
-			server.setSoTimeout(2000);
+			server.setSoTimeout(1200);
 			
 			//Getting database connection
 			try{
@@ -54,7 +55,7 @@ public class ServerMain {
 			while(true) {
 				
 				try{
-					System.out.println("Waiting...");
+					System.out.print(".");
 					ClientConnection client = new ClientConnection(server.accept());
 					client.start();
 					//if teacher, then add course to map, create new datagram socket for it, and update students

@@ -13,6 +13,7 @@ using System.IO;
 using Newtonsoft.Json;
 using System.Collections;
 using NLog;
+using System.Configuration;
 
 namespace TobiiForm
 {
@@ -33,7 +34,7 @@ namespace TobiiForm
         //Avoid hardcoding screen dimensions - Needed as tobii returns values 0-1 x,y
         Int32 screenWidth = Screen.PrimaryScreen.Bounds.Width;
         Int32 screenHeight = Screen.PrimaryScreen.Bounds.Height;
-        int eyeTrackerWaitMax = 35,eyeTrackerWait=0;
+        int eyeTrackerWaitMax = int.Parse(ConfigurationManager.AppSettings["TrackerWait"].ToString();int eyeTrackerWait=0;
 
         ServerConnection server;
     

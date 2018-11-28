@@ -21,7 +21,7 @@ public class ServerUDP implements Runnable{
 	private boolean run=true,database=true;
 	private int crn;
 	private InetAddress ip;
-	
+	//private String[] names=new String[] {"Anthony","Austin","Joe","Bob"};
 	//Get the crn,the target IP(teacher),a datagramSocket, and a DB Connection
 	public ServerUDP(int course,InetAddress i,DatagramSocket d,Connection conn) {
 		ip=i;
@@ -56,12 +56,12 @@ public class ServerUDP implements Runnable{
 				//get a packet in and send it off to the teacher
 				streamSocket.receive(streamPacket);
 				recievedString=new String(streamPacket.getData(),streamPacket.getOffset(),streamPacket.getLength());	
+				//Random rand = new Random();
+				//recievedString="#"+names[rand.nextInt(4)]+"#"+rand.nextInt(500)+"#"+rand.nextInt(500)+"#"+"2018-12-12 10:10:10.100"+"#"+rand.nextInt(2000)+";";
 				recievedBytes=recievedString.getBytes();
 				streamSocket.send(new DatagramPacket(recievedBytes , recievedBytes.length,ip,streamSocket.getLocalPort()));
 				//try to write the data to the database
-				Random rand = new Random();
-				recievedString="#Anthony#"+rand.nextInt(50)+"#"+rand.nextInt(50)+"#"+"2018-12-12 10:10:10:100"+"#An application";
-				
+				System.out.println(recievedString);
 				if(database) {
 					String user,posX,posY,time,app;
 					int index=1;
@@ -85,7 +85,7 @@ public class ServerUDP implements Runnable{
 						state.execute("Insert into trackingdata values("+crn+",'"+user+"',"+posX+","+posY+",'"+app+"','"+time+"');");
 					} catch (SQLException e) {
 						System.out.println("database insert failed Failed");
-						e.printStackTrace();
+						//e.printStackTrace();
 						
 					}
 				
