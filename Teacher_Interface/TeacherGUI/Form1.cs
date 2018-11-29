@@ -164,6 +164,7 @@ namespace TeacherGUI
                     index += posY.Length + 1;
                     time = packetText.Substring(index + 1, packetText.IndexOf('#', index + 1) - 1 - index);
                     index += time.Length + 1;
+                    Console.WriteLine(posX + " " + posY );
                     if (packetText.Substring(index).Contains("#"))
                         try {
                             app = packetText.Substring(index + 1, packetText.Length - index - 2 - packetText.Substring(packetText.IndexOf(';')).Length);
@@ -180,7 +181,7 @@ namespace TeacherGUI
                     } else {
                         updateStudentApp(name,app);
                     }
-                    HeatPoint newHeat = new HeatPoint(int.Parse(posX), int.Parse(posY), byte.MaxValue );
+                    HeatPoint newHeat = new HeatPoint((int)double.Parse(posX)/2, (int)double.Parse(posY)/2, byte.MaxValue );
                     Console.WriteLine(newHeat.X + " ;" + newHeat.Y);
                     for(int i= 0; i < classList.Count; i++)
                     {
