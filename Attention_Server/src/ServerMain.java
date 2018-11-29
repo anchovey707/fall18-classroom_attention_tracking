@@ -72,6 +72,7 @@ public class ServerMain {
 							client.updatePort(UDPport);
 							teacherList.add(client);
 							currentCourses.put(client.getCourse(),UDPport);
+							updateStudents();
 						}catch(SocketException e) {
 							System.out.println("Teacher tried to connect, but failed");
 							removePort(UDPport);
@@ -175,12 +176,14 @@ public class ServerMain {
 
 	//New class is created, so update students to direct to class
 	public static int updateStudents(){
+		System.out.println("Updating students");
 		int changed=0;
+		for(int i=0;i<currentCourses.size();i++)
+			System.out.print(currentCourses.values().toArray()[i]+",");
 		for(int i=0;i<studentList.size();i++) {
 			if(currentCourses.containsKey(studentList.get(i).getCourse())&&studentList.get(i).getPort()==basePort+1) {				
 				studentList.get(i).updatePort(currentCourses.get(studentList.get(i).getCourse()).intValue());
-				System.out.println("found a class");
-			
+				
 			//else set the student to default port (basePort+1)
 			}else if(studentList.get(i).getPort()!=basePort+1)
 				studentList.get(i).updatePort(basePort+1);
@@ -215,10 +218,10 @@ public class ServerMain {
 												"ON course.crn=student_courses.crn " +
 												"WHERE student_courses.student_id='"+student.getUser()+"' AND course.endTime - CURRENT_TIME() > 0 " + 
 												"ORDER BY timeDiff DESC;");
-				while(courses.next()) {
-					System.out.println(courses.getInt(1));
-					student.setCourse(courses.getInt(1));	
-				}
+				courses.next();
+				System.out.println(courses.getInt(1));
+				student.setCourse(courses.getInt(1));	
+				
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}

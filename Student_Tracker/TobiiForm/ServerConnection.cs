@@ -76,6 +76,7 @@ namespace TobiiForm{
                     readyToSend = true;
                 }catch(SocketException e) {
                     tcpSocket.Send(new byte[] { 0 });
+                    Console.WriteLine("heartbeat");
                 }
             }
         }
@@ -87,7 +88,8 @@ namespace TobiiForm{
                     udpSocket.SendTo(data, new IPEndPoint(IPAddress.Parse(ip), port));
             } catch (Exception e) {
                 //If it did not send then it probably is no longer conencted, so try again
-                InitConnection();
+                Console.WriteLine(e.StackTrace);
+                //InitConnection();
             }
         }
       

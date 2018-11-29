@@ -34,7 +34,7 @@ namespace TobiiForm
         //Avoid hardcoding screen dimensions - Needed as tobii returns values 0-1 x,y
         Int32 screenWidth = Screen.PrimaryScreen.Bounds.Width;
         Int32 screenHeight = Screen.PrimaryScreen.Bounds.Height;
-        int eyeTrackerWaitMax = int.Parse(ConfigurationManager.AppSettings["TrackerWait"].ToString();int eyeTrackerWait=0;
+        int eyeTrackerWaitMax = int.Parse(ConfigurationManager.AppSettings["TrackerWait"].ToString());int eyeTrackerWait=0;
 
         ServerConnection server;
     
@@ -53,6 +53,7 @@ namespace TobiiForm
             eyeTrackers = EyeTrackingOperations.FindAllEyeTrackers();
             if (eyeTrackers.Count == 0)
             {
+                Console.WriteLine("Eye tracker failed");
                 TobiiEyeTrackerProcess.Close();
                 Environment.Exit(-1);
             }

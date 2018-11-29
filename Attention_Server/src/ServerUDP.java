@@ -56,12 +56,9 @@ public class ServerUDP implements Runnable{
 				//get a packet in and send it off to the teacher
 				streamSocket.receive(streamPacket);
 				recievedString=new String(streamPacket.getData(),streamPacket.getOffset(),streamPacket.getLength());	
-				//Random rand = new Random();
-				//recievedString="#"+names[rand.nextInt(4)]+"#"+rand.nextInt(500)+"#"+rand.nextInt(500)+"#"+"2018-12-12 10:10:10.100"+"#"+rand.nextInt(2000)+";";
 				recievedBytes=recievedString.getBytes();
 				streamSocket.send(new DatagramPacket(recievedBytes , recievedBytes.length,ip,streamSocket.getLocalPort()));
 				//try to write the data to the database
-				System.out.println(recievedString);
 				if(database) {
 					String user,posX,posY,time,app;
 					int index=1;
