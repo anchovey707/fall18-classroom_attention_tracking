@@ -30,7 +30,7 @@ namespace TeacherGUI
             }
             catch (MySql.Data.MySqlClient.MySqlException ex)
             {
-                MessageBox.Show("Could not access database, check the connection values");
+                MessageBox.Show(ex.StackTrace+"  //Could not access database, check the connection values");
             }
         }
         

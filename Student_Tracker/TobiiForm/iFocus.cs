@@ -89,13 +89,15 @@ namespace TobiiForm
                     
 
                 }
-                String xString = x.ToString();
-                String yString = y.ToString();
+                //String xString = x.ToString();
+                //String yString = y.ToString();
 
                 //jSonPointDataObject = new JsonObject(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), xString, yString,viewingBrowser);
                 //jSonArray.Add(jSonPointDataObject);
-                currentData = "#" + Environment.UserName + "#" + xString + "#" + yString
-                    + "#" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + "#" + viewingBrowser + ";";
+                x *= 1920/screenWidth;
+                y *= 1080/screenHeight;
+                currentData = "#" + Environment.UserName + "#" + x + "#" + y + "#" 
+                    + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + "#" + viewingBrowser + ";";
                 server.SendDataToServer(Encoding.ASCII.GetBytes(currentData));
                 eyeTrackerWait = 0;
             }

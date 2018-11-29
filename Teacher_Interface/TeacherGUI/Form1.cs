@@ -180,7 +180,17 @@ namespace TeacherGUI
                     } else {
                         updateStudentApp(name,app);
                     }
-                    HeatPoint newHeat = new HeatPoint((int)double.Parse(posX)/2, (int)double.Parse(posY)/2, byte.MaxValue );
+                    int tempX=(int)double.Parse(posX) / 2;
+                    if (tempX < 0)
+                        tempX = 0;
+                    else if (tempX > 960)
+                        tempX = 960;
+                    int tempY= (int)double.Parse(posY) / 2;
+                    if (tempY < 0)
+                        tempY = 0;
+                    else if (tempY > 960)
+                        tempY = 960;
+                    HeatPoint newHeat = new HeatPoint(tempX, tempY, byte.MaxValue );
                     Console.WriteLine(newHeat.X + " ;" + newHeat.Y);
                     for(int i= 0; i < classList.Count; i++)
                     {
