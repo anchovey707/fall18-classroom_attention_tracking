@@ -13,6 +13,7 @@ using System.IO;
 using Newtonsoft.Json;
 using System.Collections;
 using NLog;
+using System.Configuration;
 
 namespace TobiiForm
 {
@@ -24,28 +25,26 @@ namespace TobiiForm
         IEyeTracker tracker;
         //Data to be written to file
         static String currentData;
-        //Logger
-        private static Logger logger = LogManager.GetCurrentClassLogger();
         //List of open tabs
         static List<Window> openTabs;
         //Timer if necessary
         static Int32 byteCount;
-        static FileStream Form1FileStreamObject;
         Process tobiiEyeTrackerProcess;
         static  JsonObject jSonPointDataObject;
         //Avoid hardcoding screen dimensions - Needed as tobii returns values 0-1 x,y
         Int32 screenWidth = Screen.PrimaryScreen.Bounds.Width;
         Int32 screenHeight = Screen.PrimaryScreen.Bounds.Height;
-        String surveyAnswers;
-        String previousAnswer = "100";
+        int eyeTrackerWaitMax = int.Parse(ConfigurationManager.AppSettings["TrackerWait"].ToString());int eyeTrackerWait=0;
+
+        ServerConnection server;
     
         //Constructor
-        public iFocus(FileStream fs)
-        {
+        public iFocus(ServerConnection server) {
             Debug.Write("iFocus - Started!");
             SetEyeTrackers();
-            Form1FileStreamObject = fs;
             tracker = eyeTrackers[0];
+            this.server = server;
+            this.tracker.GazeDataReceived += EyeTracker_GazeDataReceived;
         }
 
         //get 'all' of the eyetrackers (should only be 1) and puts it into array
@@ -54,99 +53,54 @@ namespace TobiiForm
             eyeTrackers = EyeTrackingOperations.FindAllEyeTrackers();
             if (eyeTrackers.Count == 0)
             {
-                logger.Fatal( this.GetType().Name + " Class, Eye Tracker not found " + DateTime.Now + "\n");
+                Console.WriteLine("Eye tracker failed");
                 TobiiEyeTrackerProcess.Close();
-                //Environment.Exit(-1);
+                Environment.Exit(-1);
             }
             
         }
         
-        List<JsonObject> jSonArray;
-        //Receives the gaze data
-        public void GazeData(IEyeTracker eyeTracker)
-        {
-            GetOpenWindows();
-            ByteCount = 0;
-            currentData = "";
-            jSonArray = new List<JsonObject>();
-            // Start listening to gaze data.
-            eyeTracker.GazeDataReceived += EyeTracker_GazeDataReceived;
-            // Wait for some data to be received.
-            System.Threading.Thread.Sleep(1000);
-            // Stop listening to gaze data.
-            eyeTracker.GazeDataReceived -= EyeTracker_GazeDataReceived;
-            //Debug.WriteLine(ByteCount);
-            currentData = JsonConvert.SerializeObject(jSonArray.ToArray(), Formatting.Indented);
-            PrintToFile(currentData);
-        }
+        //GAze data event handler, gets the XY,app and time, then sends it to the server
+        private void EyeTracker_GazeDataReceived(object sender, GazeDataEventArgs e) {
+            if (eyeTrackerWait++ > eyeTrackerWaitMax) {
+                // Left eye coordinates multiplied by computer width and height
+                //Remember to change 1680 based on monitor size
+                float x = (e.LeftEye.GazePoint.PositionOnDisplayArea.X) * screenWidth;
+                //Remember to change 1050 based on monitor size
+                float y = (e.LeftEye.GazePoint.PositionOnDisplayArea.Y) * screenHeight;
+                String current = "\"" + x.ToString() + ", " + y.ToString() + "\"";
+                Debug.WriteLine("X:" + x.ToString() + ", Y:" + y.ToString() + "\"");
+                // check NaN
+                if (Double.IsNaN(e.LeftEye.GazePoint.PositionOnDisplayArea.X))
+                    return;
 
-        
+                PointF center = new PointF(x, y);
+                GetOpenWindows();
+                String viewingBrowser = "";
+                foreach (Window w in openTabs) {
+                    Console.WriteLine(w.GetTabInfo());
+                    Rect tempRect = w.GetRectangleInfo();
+                    //Check for what is being viewed
+                    if (tempRect.Left < x && x < tempRect.Right && tempRect.Top < y && tempRect.Bottom > y) {
+                        //Current browser tab being viewed
+                        viewingBrowser = w.GetTabInfo();
+                       break;
+                    }
+                    
 
-        private void EyeTracker_GazeDataReceived(object sender, GazeDataEventArgs e)
-        {
-            // Left eye coordinates multiplied by computer width and height
-            //Remember to change 1680 based on monitor size
-            float x = (e.LeftEye.GazePoint.PositionOnDisplayArea.X) * screenWidth;
-            //Remember to change 1050 based on monitor size
-            float y = (e.LeftEye.GazePoint.PositionOnDisplayArea.Y) * screenHeight;
-            String current = "\"" + x.ToString() + ", " + y.ToString() + "\"";
-            Debug.WriteLine("X:" + x.ToString() + ", Y:" + y.ToString() + "\"");
-            // check NaN
-            if (Double.IsNaN(e.LeftEye.GazePoint.PositionOnDisplayArea.X))
-            {
-                //X and Y coordinates
-                jSonPointDataObject = new JsonObject(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"));
-                jSonArray.Add(jSonPointDataObject);
-
-                return;
-            }
-
-            //REMOVE FOR FINAL - ONLY NEED FOR DOUBLE MONITOR
-            //x += 1680;
-
-            PointF center = new PointF(x, y);
-
-            String viewingBrowser = "";
-            //this.updateBox(center);
-            foreach (Window w in openTabs)
-            {
-
-                Rect tempRect = w.GetRectangleInfo();
-                //Check for what is being viewed
-                if (tempRect.Left < x && x < tempRect.Right && tempRect.Top < y && tempRect.Bottom > y)
-                {
-                    //Current browser tab being viewed
-                    viewingBrowser = ", " + w.GetTabInfo();
-                    break;
                 }
+                String xString = x.ToString();
+                String yString = y.ToString();
 
-            }
-            //currentData += DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + ", " + current + viewingBrowser + "\n";
-            String xString = x.ToString();
-            String yString = y.ToString();
-            surveyAnswers = Form1.surveyAnswer;
-
-            jSonPointDataObject = new JsonObject(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), xString, yString, 
-                viewingBrowser, surveyAnswers);
-            jSonArray.Add(jSonPointDataObject);
-            previousAnswer = surveyAnswers;
-            if(!previousAnswer.Equals("100"))
-            {
-                Form1.surveyAnswer = "100";
+                //jSonPointDataObject = new JsonObject(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), xString, yString,viewingBrowser);
+                //jSonArray.Add(jSonPointDataObject);
+                currentData = "#" + Environment.UserName + "#" + xString + "#" + yString
+                    + "#" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + "#" + viewingBrowser + ";";
+                server.SendDataToServer(Encoding.ASCII.GetBytes(currentData));
+                eyeTrackerWait = 0;
             }
         }
-
-        //Print to file
-        // Seek - So always appends to end, did not immediately find append to end so went with it
-        private void PrintToFile(String Data)
-        {
-            byte[] tempOutputBytes = Encoding.ASCII.GetBytes(Data);
-            Form1FileStreamObject.Seek(0, SeekOrigin.End);
-            Form1FileStreamObject.Write(tempOutputBytes, 0, tempOutputBytes.Length);
-            ByteCount += tempOutputBytes.Length;
-        }
-
-
+        
         public struct Rect
         {
             public int Left { get; set; }
@@ -227,29 +181,7 @@ namespace TobiiForm
 
 
 
-        //Start 4c Software - Removed
-        // public void RunTobiiSoftware()
-        // {
-        //Run tobii software as it will be off and we must toggle it on - proper path is important here!
-        //    try
-        //    {
-        //        Process[] TobiiTray = Process.GetProcessesByName("Tobii.EyeX.Tray");
-        //        if(TobiiTray.Length > 0) {
-        //            TobiiEyeTrackerProcess = TobiiTray[0]; // Assign to tobiiprocess so it can be closed at log-off according to IT guys wishes
-        //            return; // Tobii Already Running should not be the case
-        //         }
-        //        string executablePath = Path.GetFullPath("C:\\Program Files (x86)\\Tobii\\Tobii EyeX Interaction\\Tobii.EyeX.Tray.exe");
-        //        TobiiEyeTrackerProcess = new Process();
-        //        TobiiEyeTrackerProcess.StartInfo.FileName = executablePath;
-        //        TobiiEyeTrackerProcess.Start();
-        //        System.Threading.Thread.Sleep(15000);
-        //    }
-        //    catch(Exception e)
-        //    {
-        //        logger.Fatal("Unable to start Tobii4c Process" + DateTime.Now + "\n");
-        //        Environment.Exit(-1);
-        //    }
-        //}
+       
 
 
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Net;
@@ -12,71 +13,69 @@ namespace TeacherGUI
 {
     public partial class Form1 : Form
     {
-        //static TcpClient clientSocket = new TcpClient();
-        Socket clientSocket;
+        //static TcpClient tcpSocket = new TcpClient();
+        public Socket tcpSocket,udpSocket;
         byte[] outStream;
         byte[] inStream;
-        UdpClient listener;
-        public Socket udpsock;
+        List<Student> classList=new List<Student>();
         Form teacherHome;
+        Thread tcpThread,udpThread,mapThread;
+        Bitmap bMap;
 
+        List<String> students = new List<String>();
+        bool editClassSync = false;
         public Form1(Form f,int course)
         {
             teacherHome = f;
             InitializeComponent();
-            /*try
+            try
             {
-                clientSocket = new Socket(SocketType.Stream, ProtocolType.Tcp);
-                udpsock = new Socket(SocketType.Dgram, ProtocolType.Udp);
+                tcpSocket = new Socket(SocketType.Stream, ProtocolType.Tcp);
+                udpSocket = new Socket(SocketType.Dgram, ProtocolType.Udp);
 
                 outStream = new byte[10025];
 
                 Console.WriteLine("trying to connect");
-                clientSocket.Connect("10.40.45.58", 61600);
-
-               Console.WriteLine("waiting for starting char");
+                tcpSocket.Connect(databaseController.databaseIP, int.Parse(ConfigurationManager.AppSettings["PORT"].ToString()));
+                tcpSocket.ReceiveTimeout = 2000;
+                Console.WriteLine("waiting for starting char");
                 String returndata="";
-
-
+                
                 //Wait for the start char, ';'
                 while (returndata != ";") {
-                    inStream=new byte[clientSocket.Available];
-                    clientSocket.Receive(inStream);
+                    inStream = new byte[tcpSocket.Available];
+                    tcpSocket.Receive(inStream);
                     returndata = Encoding.ASCII.GetString(inStream);
-                    Console.WriteLine("'"+returndata+"'");
                 }
                 Console.WriteLine("got start char");
-                outStream = Encoding.ASCII.GetBytes("#" + Environment.UserName + "#" + course + ";");
-                //send my name and corse that I want to stream
-                clientSocket.Send(outStream);
+                outStream = Encoding.ASCII.GetBytes("#" + databaseController.username + "#" + course + ";");
+                
+                //send my name and course that I want to stream
+                tcpSocket.Send(outStream);
                 Console.WriteLine("waiting for port info");
-                //wait for port
+                
+                //wait for port number
                 inStream = new byte[0];
                 returndata ="";
                 while (!returndata.Contains(";")) {
-                    inStream = new byte[clientSocket.Available];
-                    clientSocket.Receive(inStream);
+                    inStream = new byte[tcpSocket.Available];
+                    tcpSocket.Receive(inStream);
                     returndata += Encoding.ASCII.GetString(inStream);
                 }
-                Console.WriteLine("got data="+returndata);
-                Console.WriteLine(returndata.IndexOf(":"));
-                Console.WriteLine(returndata.Length);
 
-                Console.WriteLine("port=" + returndata.Substring(returndata.IndexOf(":") + 1,returndata.Length -returndata.IndexOf(":")-2));
                 returndata = returndata.Substring(returndata.IndexOf(":") + 1, returndata.Length - returndata.IndexOf(":") - 2);
-
-
-                udpsock.Bind(new IPEndPoint(IPAddress.Any,int.Parse(returndata)));
-                Console.WriteLine("Starting UDP");
-                ThreadStart childref = new ThreadStart(ListenForPackets);
-                Thread childThread = new Thread(childref);
-                childThread.Start();
-                Console.WriteLine("Thread should have started");
+                
+                udpSocket.Bind(new IPEndPoint(IPAddress.Any,int.Parse(returndata)));
+                udpThread = new Thread(ListenForPackets);udpThread.Start();
+                tcpThread = new Thread(heartBeat);tcpThread.Start();
+                mapThread = new Thread(UpdateMap);mapThread.Start();
             }
             catch (Exception e){
-                please.Text = e.StackTrace;
+                
                 Console.WriteLine(e.StackTrace);
-            }*/
+                this.Close();
+                return;
+            }
 
 
 
@@ -85,23 +84,7 @@ namespace TeacherGUI
 
 
             // Create new memory bitmap the same size as the picture box
-            Bitmap bMap = new Bitmap(pictureBox1.Width, pictureBox1.Height);
-            // Initialize random number generator
-            Random rRand = new Random();
-            // Loop variables
-            int iX;
-            int iY;
-            byte iIntense;
-            // Lets loop 500 times and create a random point each iteration
-            for (int i = 0; i < 500; i++)
-            {
-                // Pick random locations and intensity
-                iX = rRand.Next(0, 200);
-                iY = rRand.Next(0, 200);
-                iIntense = (byte)rRand.Next(0, 120);
-                // Add heat point to heat points list
-                HeatPoints.Add(new HeatPoint(iX, iY, iIntense));
-            }
+            bMap = new Bitmap(pictureBox1.Width, pictureBox1.Height);
             // Call CreateIntensityMask, give it the memory bitmap, and use it's output to set the picture box image
             pictureBox1.Image = CreateIntensityMask(bMap, HeatPoints);
 
@@ -117,21 +100,7 @@ namespace TeacherGUI
 
             // Display grid lines.
            // listView2.GridLines = true;
-
-            // Create three items and three sets of subitems for each item.
-            ListViewItem item1 = new ListViewItem("Austin Lambeth",0);
-            item1.SubItems.Add("al05661");
-            item1.SubItems.Add("Current Slides");
-            item1.SubItems.Add("3");
-            ListViewItem item2 = new ListViewItem("Dylan Albrecht", 1);
-            item2.SubItems.Add("fagot.net");
-            item2.SubItems.Add("something he shouldn't have open");
-            item2.SubItems.Add("6");
-            ListViewItem item3 = new ListViewItem("Phillip", 1);
-            item3.SubItems.Add("cool guy philip");
-            item3.SubItems.Add("Current Slides");
-            item3.SubItems.Add("9");
-
+            
             // Create columns for the items and subitems.
             // Width of -2 indicates auto-size.
             listView1.Columns.Add("Student Name", -2, HorizontalAlignment.Left);
@@ -144,95 +113,179 @@ namespace TeacherGUI
             ListViewItem mozilla = new ListViewItem("mozilla", 0);
             //listView2.Columns.Add("Open Windows", -2, HorizontalAlignment.Left);
             //Add the items to the ListView.
-           listView1.Items.AddRange(new ListViewItem[] { item1, item2, item3 });
+            //listView1.Items.AddRange(new ListViewItem[] { item1, item2, item3 });
             //listView2.Items.AddRange(new ListViewItem[] { chrome,mozilla });
 
 
         }
 
-        public void ListenForPackets()
-        {
+        public void UpdateMap() {
             while (true)
             {
-                //Console.WriteLine("Im in boss");
-                if (udpsock.Available > 0)
-                {
-                    inStream = new byte[udpsock.Available];
-
-                    udpsock.Receive(inStream);
-                    Console.WriteLine("Packet=" + Encoding.ASCII.GetString(inStream));
+                Thread.Sleep(200);
+                Console.WriteLine("Map");
+                //HeatPoints.Clear();
+                bMap = new Bitmap(pictureBox1.Width, pictureBox1.Height);
+                foreach (Student student in classList) {
+                    if (editClassSync)
+                        break;
+                    HeatPoints.Add(student.StHeatPoint);
                 }
+                pictureBox1.Image = CreateIntensityMask(bMap, HeatPoints);
                 
             }
-            
         }
 
-        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+
+
+        public void ListenForPackets()
         {
+            string packetText;
+            string name = "", posX = "", posY = "", time = "", app = "";
+            int index = 0;
+            while (true)
+            {
+                //Console.WriteLine("Listening for next packet");
+                if (udpSocket.Available > 0)
+                {
+                    inStream = new byte[udpSocket.Available];
 
+                    udpSocket.Receive(inStream);
+                    //Packet is in bytes so decoded it
+                    packetText = Encoding.ASCII.GetString(inStream);
+                    Console.WriteLine("Packet=" + packetText);
+                    index = 0;
+                    name = packetText.Substring(index + 1, packetText.IndexOf('#', index + 1) - 1);
+                    index += name.Length + 1;
+                    posX = packetText.Substring(index + 1, packetText.IndexOf('#', index + 1) - 1 - index);
+                    index += posX.Length + 1;
+                    posY = packetText.Substring(index + 1, packetText.IndexOf('#', index + 1) - 1 - index);
+                    index += posY.Length + 1;
+                    time = packetText.Substring(index + 1, packetText.IndexOf('#', index + 1) - 1 - index);
+                    index += time.Length + 1;
+                    if (packetText.Substring(index).Contains("#"))
+                        try {
+                            app = packetText.Substring(index + 1, packetText.Length - index - 2 - packetText.Substring(packetText.IndexOf(';')).Length);
+                        }catch(Exception e){
+                            app = "";
+                        }
+                    else
+                        app = "";
+                    if (!students.Contains(name)){
+                        if (listView1.InvokeRequired) {
+                            editClassSync = true;
+                            addStudent(name);
+                        }
+                    } else {
+                        updateStudentApp(name,app);
+                    }
+                    HeatPoint newHeat = new HeatPoint(int.Parse(posX), int.Parse(posY), byte.MaxValue );
+                    Console.WriteLine(newHeat.X + " ;" + newHeat.Y);
+                    for(int i= 0; i < classList.Count; i++)
+                    {
+                        if (classList[i].getName()==name)
+                        {
+                            classList[i].setHP(newHeat);
+                            Console.WriteLine(newHeat.X);
+                            Console.WriteLine(classList[i].getName());
+                            Console.WriteLine(classList[0].getName());
+
+                            Console.WriteLine(classList[0].getHP().X);
+                            Console.WriteLine(classList[i].getHP().X);
+                            Console.WriteLine(classList.ToString());
+                        }
+                    }
+                        
+                }
+            }
         }
 
-        private void listView1_SelectedIndexChanged(object sender, EventArgs e)
+        public void addStudent(string name) {
+            Console.WriteLine(listView1.InvokeRequired);
+            if (listView1.InvokeRequired)
+            {
+                Invoke((MethodInvoker)delegate { Console.WriteLine("Invoke Required!!!!!!!!!!!!!!!!!!!!!!!!!1"); this.addStudent(name); });
+            }
+            else
+            {
+                students.Add(name);
+                Console.WriteLine("Added " + name + " to the class");
+                ListViewItem item = new ListViewItem(databaseController.getFullName(name));
+                item.SubItems.Add(name);
+                item.SubItems.Add("");
+                listView1.Items.Add(item);
+                classList.Add(new Student(name));
+                editClassSync = false;
+            }
+        }
+        
+        public void addStudentOld(string name)
         {
+            Console.WriteLine(listView1.InvokeRequired);
+            if (listView1.InvokeRequired)
+            {
+                Invoke((MethodInvoker)delegate { Console.WriteLine("Invoke Required!!!!!!!!!!!!!!!!!!!!!!!!!1"); this.addStudent(name); });
+            }
+            else
+            {
+                students.Add(name);
+                Console.WriteLine("Added " + name + " to the class");
+                ListViewItem item = new ListViewItem(databaseController.getFullName(name));
+                item.SubItems.Add(name);
+                item.SubItems.Add("");
+                listView1.Items.Add(item);
+                classList.Add(new Student(name));
+            }
+        }
+        public void updateStudentApp(string name,string app) {
+            if (listView1.InvokeRequired) {
+                Invoke((MethodInvoker)delegate { this.updateStudentApp(name,app); });
+            } else {
+                listView1.Items[students.IndexOf(name)].SubItems[2].Text = app;
+                
+            }
+
 
         }
 
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
+        public void heartBeat() {
+            while (true) {
+                Thread.Sleep(1000);
+                try {
+                    tcpSocket.Send(new byte[] { 0 });
+                }catch(Exception e) {
+                    invokeClose();
+                }
+            }
         }
+
+
+
+        private void invokeClose() {
+            if (this.InvokeRequired) {
+                Invoke((MethodInvoker)delegate { this.invokeClose(); });
+            } else {
+                this.Close();
+
+            }
+        }
+        
 
         private void button1_Click(object sender, EventArgs e){
             this.Close();
         }
         private void Form1_FormClosing(object sender, FormClosingEventArgs e) {
+            //need to stop thread as well
+            tcpThread.Abort();
+            udpThread.Abort();
+            mapThread.Abort();
+            tcpSocket.Close();
+            udpSocket.Close();
             teacherHome.Show();
+            
         }
         private List<HeatPoint> HeatPoints = new List<HeatPoint>();
-        
-        private void button2_Click(object sender, EventArgs e)
-        {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            /*
-            // Create new memory bitmap the same size as the picture box
-            Bitmap bMap = new Bitmap(pictureBox1.Width, pictureBox1.Height);
-            // Initialize random number generator
-            Random rRand = new Random();
-            // Loop variables
-            int iX;
-            int iY;
-            byte iIntense;
-            // Lets loop 500 times and create a random point each iteration
-            for (int i = 0; i < 500; i++)
-            {
-                // Pick random locations and intensity
-                iX = rRand.Next(0, 200);
-                iY = rRand.Next(0, 200);
-                iIntense = (byte)rRand.Next(0, 120);
-                // Add heat point to heat points list
-                HeatPoints.Add(new HeatPoint(iX, iY, iIntense));
-            }
-            // Call CreateIntensityMask, give it the memory bitmap, and use it's output to set the picture box image
-            pictureBox1.Image = CreateIntensityMask(bMap, HeatPoints);
-            */
-        }
+       
         private Bitmap CreateIntensityMask(Bitmap bSurface, List<HeatPoint> aHeatPoints)
         {
             // Create new graphics surface from memory bitmap
@@ -240,10 +293,20 @@ namespace TeacherGUI
             // Set background color to white so that pixels can be correctly colorized
             DrawSurface.Clear(Color.White);
             // Traverse heat point data and draw masks for each heat point
-            foreach (HeatPoint DataPoint in aHeatPoints)
+            try
             {
-                // Render current heat point on draw surface
-                DrawHeatPoint(DrawSurface, DataPoint, 15);
+                foreach (Student student in classList)
+                {
+                    // Render current heat point on draw surface
+                    Console.WriteLine("Im in the create map");
+                    Console.WriteLine(student.getHP().X);
+                    Console.WriteLine(student.getHP().Y);
+                    DrawHeatPoint(DrawSurface, student.getHP(), 25);
+                }
+            }
+            catch(Exception e)
+            {
+
             }
             return bSurface;
         }
@@ -323,5 +386,30 @@ namespace TeacherGUI
             Intensity = bIntensity;
         }
     }
+    public class Student
+    {
+        public HeatPoint StHeatPoint;
+        public String name;
+        public Student(String name1)
+        {
+            this.name = name1;
+            StHeatPoint = new HeatPoint();
+        }
+        public String getName()
+        {
+            return this.name;
+        }
+        public void setHP(HeatPoint heat)
+        {
+            Console.WriteLine(heat.X);
+            this.StHeatPoint = heat;
+            Console.WriteLine(this.StHeatPoint.X);
+        }
+        public HeatPoint getHP()
+        {
+            return this.StHeatPoint;
+        }
+    }
+
 }
 

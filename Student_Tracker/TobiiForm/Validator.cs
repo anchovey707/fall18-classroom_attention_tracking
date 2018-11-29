@@ -48,7 +48,7 @@ namespace TobiiForm
                 {
                     TobiiTray[0].Close(); // Close tobii tray on logged in user 
                 }
-                serverConnectionToClose.TerminateProtocol();
+                //serverConnectionToClose.TerminateProtocol();
             }
             if (current < start)
             {//Can only be minutes now that we did hour check

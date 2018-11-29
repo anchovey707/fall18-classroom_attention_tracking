@@ -5,18 +5,18 @@ import java.net.InetAddress;
 import java.net.Socket;
 
 public class ClientConnection extends Thread{
-	String username;
-	int course=1234,port=61600;
-	boolean ready=false,isTeacher=false;
+	private String username;
+	private int course=0,port=61600;
+	private boolean ready=false,isTeacher=false;
 	//timing and heartbeat
-	int TCPTiming=500,heartbeatMax=20,heartbeat=heartbeatMax;
+	private int TCPTiming=500,heartbeatMax=5,heartbeat=heartbeatMax;
 	
 	//TCP connection
-	Socket socket;
-	InetAddress ip;
-	DataInputStream inputStream;
-	DataOutputStream OutputStream;
-	String output="";
+	private Socket socket;
+	private InetAddress ip;
+	private DataInputStream inputStream;
+	private DataOutputStream OutputStream;
+	private String output="";
 	
 	public ClientConnection(Socket s) {
 		this(s,1);
@@ -115,7 +115,6 @@ public class ClientConnection extends Thread{
 					heartbeat=heartbeatMax;
 					inputStream.readByte();
 				}
-				heartbeat=heartbeatMax;
 				if(heartbeat--<=0)
 					ready=false;
 				
