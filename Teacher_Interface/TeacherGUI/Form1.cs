@@ -9,11 +9,8 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
-namespace TeacherGUI
-{
-    public partial class Form1 : Form
-    {
-        //static TcpClient tcpSocket = new TcpClient();
+namespace TeacherGUI{
+    public partial class Form1 : Form{
         public Socket tcpSocket,udpSocket;
         byte[] outStream;
         byte[] inStream;
@@ -28,17 +25,15 @@ namespace TeacherGUI
         {
             teacherHome = f;
             InitializeComponent();
-            try
-            {
+            try{
+                //initialize sockets
                 tcpSocket = new Socket(SocketType.Stream, ProtocolType.Tcp);
                 udpSocket = new Socket(SocketType.Dgram, ProtocolType.Udp);
-
                 outStream = new byte[10025];
 
                 Console.WriteLine("trying to connect");
-                tcpSocket.Connect(databaseController.databaseIP, int.Parse(ConfigurationManager.AppSettings["PORT"].ToString()));
+                tcpSocket.Connect(ConfigurationManager.AppSettings["IP"], int.Parse(ConfigurationManager.AppSettings["PORT"].ToString()));
                 tcpSocket.ReceiveTimeout = 2000;
-                Console.WriteLine("waiting for starting char");
                 String returndata="";
                 
                 //Wait for the start char, ';'
@@ -47,7 +42,7 @@ namespace TeacherGUI
                     tcpSocket.Receive(inStream);
                     returndata = Encoding.ASCII.GetString(inStream);
                 }
-                Console.WriteLine("got start char");
+                Console.WriteLine("Connected!");
                 outStream = Encoding.ASCII.GetBytes("#" + databaseController.username + "#" + course + ";");
                 
                 //send my name and course that I want to stream
@@ -71,60 +66,35 @@ namespace TeacherGUI
                 mapThread = new Thread(UpdateMap);mapThread.Start();
             }
             catch (Exception e){
-                
-                Console.WriteLine(e.StackTrace);
                 this.Close();
                 return;
             }
-
-
-
-
-            // Set the view to show details.
-
+            
 
             // Create new memory bitmap the same size as the picture box
             bMap = new Bitmap(pictureBox1.Width, pictureBox1.Height);
             // Call CreateIntensityMask, give it the memory bitmap, and use it's output to set the picture box image
             pictureBox1.Image = CreateIntensityMask(bMap, HeatPoints);
 
-
-
+            
             listView1.View = View.Details;
             listView1.CheckBoxes = true;
             // Display grid lines.
             listView1.GridLines = true;
-           // listView2.View = View.Details;
-
-           // listView2.CheckBoxes = true;
-
-            // Display grid lines.
-           // listView2.GridLines = true;
             
             // Create columns for the items and subitems.
             // Width of -2 indicates auto-size.
             listView1.Columns.Add("Student Name", -2, HorizontalAlignment.Left);
             listView1.Columns.Add("Student Email", -2, HorizontalAlignment.Left);
             listView1.Columns.Add("Current Focused Window", -2, HorizontalAlignment.Left);
-            ListViewItem chrome = new ListViewItem("Chrome", 0);
-            chrome.SubItems.Add("1");
-            chrome.SubItems.Add("2");
-            chrome.SubItems.Add("3");
-            ListViewItem mozilla = new ListViewItem("mozilla", 0);
-            //listView2.Columns.Add("Open Windows", -2, HorizontalAlignment.Left);
-            //Add the items to the ListView.
-            //listView1.Items.AddRange(new ListViewItem[] { item1, item2, item3 });
-            //listView2.Items.AddRange(new ListViewItem[] { chrome,mozilla });
-
 
         }
 
+        //Update the bitmap in the pictureBox object
         public void UpdateMap() {
             while (true)
             {
-                Thread.Sleep(200);
-                Console.WriteLine("Map");
-                //HeatPoints.Clear();
+                Thread.Sleep(int.Parse(ConfigurationManager.AppSettings["UPDATESPEED"]));
                 bMap = new Bitmap(pictureBox1.Width, pictureBox1.Height);
                 foreach (Student student in classList) {
                     if (editClassSync)
@@ -137,23 +107,19 @@ namespace TeacherGUI
         }
 
 
-
-        public void ListenForPackets()
-        {
+        //Thread to listen for packets on the UDP socket
+        public void ListenForPackets(){
             string packetText;
             string name = "", posX = "", posY = "", time = "", app = "";
             int index = 0;
             while (true)
             {
                 //Console.WriteLine("Listening for next packet");
-                if (udpSocket.Available > 0)
-                {
+                if (udpSocket.Available > 0){
                     inStream = new byte[udpSocket.Available];
-
                     udpSocket.Receive(inStream);
-                    //Packet is in bytes so decoded it
+                    //Packet is in bytes so decoded it and parse each value out
                     packetText = Encoding.ASCII.GetString(inStream);
-                    Console.WriteLine("Packet=" + packetText);
                     index = 0;
                     name = packetText.Substring(index + 1, packetText.IndexOf('#', index + 1) - 1);
                     index += name.Length + 1;
@@ -163,7 +129,7 @@ namespace TeacherGUI
                     index += posY.Length + 1;
                     time = packetText.Substring(index + 1, packetText.IndexOf('#', index + 1) - 1 - index);
                     index += time.Length + 1;
-                    Console.WriteLine(posX + " " + posY );
+                    //Since the app might not be included, then it has to check if it's there. '#' indeicates another peice of info
                     if (packetText.Substring(index).Contains("#"))
                         try {
                             app = packetText.Substring(index + 1, packetText.Length - index - 2 - packetText.Substring(packetText.IndexOf(';')).Length);
@@ -172,6 +138,8 @@ namespace TeacherGUI
                         }
                     else
                         app = "";
+
+                    //Check if it's a new student or not. If they're already in the list then just update their app.
                     if (!students.Contains(name)){
                         if (listView1.InvokeRequired) {
                             editClassSync = true;
@@ -180,6 +148,9 @@ namespace TeacherGUI
                     } else {
                         updateStudentApp(name,app);
                     }
+
+                    //Since the output(pictureImage) is half of a 1920x1080 screen, 960x540, then divide it by 2
+                    //Also if the input is out of bounds then set it back inside of the bounds
                     int tempX=(int)double.Parse(posX) / 2;
                     if (tempX < 0)
                         tempX = 0;
@@ -190,37 +161,25 @@ namespace TeacherGUI
                         tempY = 0;
                     else if (tempY > 960)
                         tempY = 960;
+
+                    //create a new heatpoint a set it to the student
                     HeatPoint newHeat = new HeatPoint(tempX, tempY, byte.MaxValue );
-                    Console.WriteLine(newHeat.X + " ;" + newHeat.Y);
                     for(int i= 0; i < classList.Count; i++)
                     {
                         if (classList[i].getName()==name)
-                        {
                             classList[i].setHP(newHeat);
-                            Console.WriteLine(newHeat.X);
-                            Console.WriteLine(classList[i].getName());
-                            Console.WriteLine(classList[0].getName());
-
-                            Console.WriteLine(classList[0].getHP().X);
-                            Console.WriteLine(classList[i].getHP().X);
-                            Console.WriteLine(classList.ToString());
-                        }
+                        
                     }
                         
                 }
             }
         }
-
+        //Add student to the list, it also has to make sure that when the map updates it dosen't access the list while it's being edited
         public void addStudent(string name) {
-            Console.WriteLine(listView1.InvokeRequired);
-            if (listView1.InvokeRequired)
-            {
-                Invoke((MethodInvoker)delegate { Console.WriteLine("Invoke Required!!!!!!!!!!!!!!!!!!!!!!!!!1"); this.addStudent(name); });
-            }
-            else
-            {
+            if (listView1.InvokeRequired){
+                Invoke((MethodInvoker)delegate {  this.addStudent(name); });
+            } else { 
                 students.Add(name);
-                Console.WriteLine("Added " + name + " to the class");
                 ListViewItem item = new ListViewItem(databaseController.getFullName(name));
                 item.SubItems.Add(name);
                 item.SubItems.Add("");
@@ -229,25 +188,8 @@ namespace TeacherGUI
                 editClassSync = false;
             }
         }
-        
-        public void addStudentOld(string name)
-        {
-            Console.WriteLine(listView1.InvokeRequired);
-            if (listView1.InvokeRequired)
-            {
-                Invoke((MethodInvoker)delegate { Console.WriteLine("Invoke Required!!!!!!!!!!!!!!!!!!!!!!!!!1"); this.addStudent(name); });
-            }
-            else
-            {
-                students.Add(name);
-                Console.WriteLine("Added " + name + " to the class");
-                ListViewItem item = new ListViewItem(databaseController.getFullName(name));
-                item.SubItems.Add(name);
-                item.SubItems.Add("");
-                listView1.Items.Add(item);
-                classList.Add(new Student(name));
-            }
-        }
+
+        //Update the listview to change the currently viewed app for the student
         public void updateStudentApp(string name,string app) {
             if (listView1.InvokeRequired) {
                 Invoke((MethodInvoker)delegate { this.updateStudentApp(name,app); });
@@ -258,7 +200,7 @@ namespace TeacherGUI
 
 
         }
-
+        //Heartbeat for the server
         public void heartBeat() {
             while (true) {
                 Thread.Sleep(1000);
@@ -270,7 +212,7 @@ namespace TeacherGUI
             }
         }
 
-
+        //close for the heartbeat method, as the heartbeat is on a seperate thread
         private void invokeClose() {
             if (this.InvokeRequired) {
                 Invoke((MethodInvoker)delegate { this.invokeClose(); });
@@ -280,12 +222,12 @@ namespace TeacherGUI
             }
         }
         
-
+        //Course selection screen
         private void button1_Click(object sender, EventArgs e){
             this.Close();
         }
+        //When the form closes it needs to stop the threads and discconect from the server
         private void Form1_FormClosing(object sender, FormClosingEventArgs e) {
-            //need to stop thread as well
             tcpThread.Abort();
             udpThread.Abort();
             mapThread.Abort();
@@ -294,6 +236,10 @@ namespace TeacherGUI
             teacherHome.Show();
             
         }
+
+
+        //This draws the heatpoints onto the canvas
+        //http://dylanvester.com/2015/10/creating-heat-maps-with-net-20-c-sharp/ 
         private List<HeatPoint> HeatPoints = new List<HeatPoint>();
        
         private Bitmap CreateIntensityMask(Bitmap bSurface, List<HeatPoint> aHeatPoints)
@@ -303,25 +249,17 @@ namespace TeacherGUI
             // Set background color to white so that pixels can be correctly colorized
             DrawSurface.Clear(Color.White);
             // Traverse heat point data and draw masks for each heat point
-            try
-            {
+            try{
                 foreach (Student student in classList)
-                {
-                    // Render current heat point on draw surface
-                    Console.WriteLine("Im in the create map");
-                    Console.WriteLine(student.getHP().X);
-                    Console.WriteLine(student.getHP().Y);
                     DrawHeatPoint(DrawSurface, student.getHP(), 25);
-                }
             }
-            catch(Exception e)
-            {
+            catch(Exception e){
 
             }
             return bSurface;
         }
-        private void DrawHeatPoint(Graphics Canvas, HeatPoint HeatPoint, int Radius)
-        {
+
+        private void DrawHeatPoint(Graphics Canvas, HeatPoint HeatPoint, int Radius){
             // Create points generic list of points to hold circumference points
             List<Point> CircumferencePointsList = new List<Point>();
             // Create an empty point to predefine the point struct used in the circumference loop
@@ -373,50 +311,40 @@ namespace TeacherGUI
             // Draw polygon (circle) using our point array and gradient brush
             Canvas.FillPolygon(GradientShaper, CircumferencePointsArray);
         }
-        private double ConvertDegreesToRadians(double degrees)
-        {
+
+        private double ConvertDegreesToRadians(double degrees){
             double radians = (Math.PI / 180) * degrees;
             return (radians);
         }
+        //End of dylanvester.com code
 
-        private void button2_Click_1(object sender, EventArgs e)
-        {
-
-        }
+        
     }
-    public struct HeatPoint
-    {
+    //Structures for keeping up with specific students and their heatpoints
+    public struct HeatPoint{
         public int X;
         public int Y;
         public byte Intensity;
-        public HeatPoint(int iX, int iY, byte bIntensity)
-        {
+        public HeatPoint(int iX, int iY, byte bIntensity){
             X = iX;
             Y = iY;
             Intensity = bIntensity;
         }
     }
-    public class Student
-    {
+    public class Student{
         public HeatPoint StHeatPoint;
         public String name;
-        public Student(String name1)
-        {
+        public Student(String name1){
             this.name = name1;
             StHeatPoint = new HeatPoint();
         }
-        public String getName()
-        {
+        public String getName(){
             return this.name;
         }
-        public void setHP(HeatPoint heat)
-        {
-            Console.WriteLine(heat.X);
+        public void setHP(HeatPoint heat){
             this.StHeatPoint = heat;
-            Console.WriteLine(this.StHeatPoint.X);
         }
-        public HeatPoint getHP()
-        {
+        public HeatPoint getHP(){
             return this.StHeatPoint;
         }
     }

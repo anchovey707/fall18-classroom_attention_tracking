@@ -60,7 +60,7 @@ namespace TobiiForm
             
         }
         
-        //GAze data event handler, gets the XY,app and time, then sends it to the server
+        //Gaze data event handler, gets the XY,app and time, then sends it to the server
         private void EyeTracker_GazeDataReceived(object sender, GazeDataEventArgs e) {
             if (eyeTrackerWait++ > eyeTrackerWaitMax) {
                 // Left eye coordinates multiplied by computer width and height
@@ -89,11 +89,7 @@ namespace TobiiForm
                     
 
                 }
-                //String xString = x.ToString();
-                //String yString = y.ToString();
-
-                //jSonPointDataObject = new JsonObject(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), xString, yString,viewingBrowser);
-                //jSonArray.Add(jSonPointDataObject);
+                //Multiply by the ratio to a 1920x1080 display
                 x *= 1920/screenWidth;
                 y *= 1080/screenHeight;
                 currentData = "#" + Environment.UserName + "#" + x + "#" + y + "#" 

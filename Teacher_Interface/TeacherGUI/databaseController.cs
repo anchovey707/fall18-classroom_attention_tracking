@@ -59,9 +59,13 @@ namespace TeacherGUI
             }
             return false;
         }
+        
+        //Login with default hashing
         public bool login(string user, string pass){
             return login(user, pass, true);
         }
+
+        //Get the teachers list of classes/courses
         public static string[] getClasses(){
             List<string> classlist = new List<string>();
             try {
@@ -76,10 +80,12 @@ namespace TeacherGUI
             return classlist.ToArray();
         }
 
+
         public static bool isAdmin(){
             return admin;
         }
 
+        //Get the student's full name
         public static string getFullName(string username) {
             List<string> classlist = new List<string>();
             string name = "~N/A";

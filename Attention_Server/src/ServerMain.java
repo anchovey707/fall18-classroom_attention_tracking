@@ -47,7 +47,7 @@ public class ServerMain {
 				conn=DriverManager.getConnection("jdbc:mysql://localhost:3306/attentiontracking","teacher","course");
 				database=true;
 			}catch(SQLException e) {
-				System.out.println("!!!!!Couldn't connect to database!!!!!");
+				System.out.println("Couldn't connect to database!");
 				e.printStackTrace();
 			}
 			
@@ -74,7 +74,8 @@ public class ServerMain {
 							currentCourses.put(client.getCourse(),UDPport);
 							updateStudents();
 						}catch(SocketException e) {
-							System.out.println("Teacher tried to connect, but failed");
+						//Something went wrong when biinding a new UDP socket, probably already bound
+							System.out.println("Teacher, "+client.getUser()+", tried to connect, but failed");
 							removePort(UDPport);
 							client.Stop();
 						}
@@ -116,7 +117,7 @@ public class ServerMain {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		//Stopping all clients
+		//Stopping all clients and socket threads
 		for(int i=0;i<studentList.size();i++)
 			studentList.get(i).Stop();
 		for(int i=0;i<teacherList.size();i++)
@@ -124,7 +125,7 @@ public class ServerMain {
 		for(int i=0;i<udpSockets.size();i++)
 			udpSockets.get(i).stop();
 		//If you're here, then something went wrong
-		System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!END OF SERVERMAIN!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		System.out.println("Server Stopped!");
 		
 	}
 	
@@ -178,8 +179,9 @@ public class ServerMain {
 	public static int updateStudents(){
 		System.out.println("Updating students");
 		int changed=0;
-		for(int i=0;i<currentCourses.size();i++)
-			System.out.print(currentCourses.values().toArray()[i]+",");
+		//for(int i=0;i<currentCourses.size();i++)
+			//System.out.print(currentCourses.values().toArray()[i]+",");
+		//Seeing if the student's current class exist in the current list
 		for(int i=0;i<studentList.size();i++) {
 			if(currentCourses.containsKey(studentList.get(i).getCourse())&&studentList.get(i).getPort()==basePort+1) {				
 				studentList.get(i).updatePort(currentCourses.get(studentList.get(i).getCourse()).intValue());
@@ -198,11 +200,10 @@ public class ServerMain {
 		//Update the student's course first
 		updateCourse(student);
 		//then check if it exist
-		if(currentCourses.containsKey(student.getCourse())) {
+		if(currentCourses.containsKey(student.getCourse())) 
 			student.updatePort(currentCourses.get(student.getCourse()));
-			System.out.println("found a class");
 		//else set the student to default port (basePort+1)
-		}else
+		else
 			student.updatePort(basePort+1);
 	}
 	
@@ -212,6 +213,7 @@ public class ServerMain {
 		if(database) {
 			System.out.println("Getting "+student.getUser()+"'s classes");
 			try {
+			//SQL statement that reuturns the students next course, based on the difference in edn time and current time and hasn't already passed.
 				ResultSet courses = retrieve("SELECT course.crn, course.endTime - CURRENT_TIME() AS timeDiff " + 
 												"FROM course " + 
 												"JOIN student_courses " +

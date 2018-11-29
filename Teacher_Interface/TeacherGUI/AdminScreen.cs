@@ -18,6 +18,7 @@ namespace TeacherGUI
             databaseController.dbConnect();
         }
 
+        //Add teacher to database
         private void SubmitProfessor_Click(object sender, EventArgs e)
         {
             databaseController.sqlQuery = "INSERT INTO teacher (login_id, pass, first_name, last_name) " +
@@ -42,6 +43,7 @@ namespace TeacherGUI
             }
         }
 
+        //Add calss to database
         private void SubmitClass_Click(object sender, EventArgs e)
         {
             
