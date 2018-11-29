@@ -4,6 +4,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,6 +28,7 @@ public class ServerMain {
 	static int basePort=61600;
 	static int[] usedPorts = new int[] {0,0,0};
 	
+	
 	static boolean database=false;
 	
 	//Database vars
@@ -37,7 +39,7 @@ public class ServerMain {
 			//ServerSocket to accept new TCP socket connections for clients(teachers and students)
 			ServerSocket server = new ServerSocket(basePort);
 			//Setting a timeout so that the serve has a chance to remove unused ports and clientConnections
-			server.setSoTimeout(2000);
+			server.setSoTimeout(1200);
 			
 			//Getting database connection
 			try{
@@ -53,24 +55,29 @@ public class ServerMain {
 			while(true) {
 				
 				try{
-					System.out.println("Waiting for new connection");
+					System.out.print(".");
 					ClientConnection client = new ClientConnection(server.accept());
 					client.start();
 					//if teacher, then add course to map, create new datagram socket for it, and update students
 					if(client.isTeacher()) {
-						teacherList.add(client);
 						int UDPport = basePort+getAvaliablePort();
-						currentCourses.put(client.getCourse(),UDPport);
 						ServerUDP UDPSocket;
-						
-						if(database)
-							UDPSocket = new ServerUDP(client.getCourse(),client.getIP(),UDPport,conn);
-						else
-							UDPSocket = new ServerUDP(client.getCourse(),client.getIP(),UDPport);
-						udpSockets.add(UDPSocket);
-						new Thread(UDPSocket).start();
-						client.updatePort(UDPport);
-						System.out.println("Students changed="+updateStudents());
+						try {
+							if(database)
+								UDPSocket = new ServerUDP(client.getCourse(),client.getIP(),UDPport,conn);
+							else
+								UDPSocket = new ServerUDP(client.getCourse(),client.getIP(),UDPport);
+							udpSockets.add(UDPSocket);
+							new Thread(UDPSocket).start();
+							client.updatePort(UDPport);
+							teacherList.add(client);
+							currentCourses.put(client.getCourse(),UDPport);
+							updateStudents();
+						}catch(SocketException e) {
+							System.out.println("Teacher tried to connect, but failed");
+							removePort(UDPport);
+							client.Stop();
+						}
 					}else{
 						//else is a student and add to the list and update their port if it can
 						studentList.add(client);
@@ -114,6 +121,8 @@ public class ServerMain {
 			studentList.get(i).Stop();
 		for(int i=0;i<teacherList.size();i++)
 			teacherList.get(i).Stop();
+		for(int i=0;i<udpSockets.size();i++)
+			udpSockets.get(i).stop();
 		//If you're here, then something went wrong
 		System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!END OF SERVERMAIN!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 		
@@ -137,9 +146,8 @@ public class ServerMain {
 				if(emptyIndex==-1){
 					if(usedPorts[i]==0)
 						emptyIndex=i;
-				}else if(port==usedPorts[i]) {
+				}if(port==usedPorts[i]) {
 					found=true;
-					break;
 				}
 			}
 		}
@@ -168,14 +176,16 @@ public class ServerMain {
 
 	//New class is created, so update students to direct to class
 	public static int updateStudents(){
+		System.out.println("Updating students");
 		int changed=0;
+		for(int i=0;i<currentCourses.size();i++)
+			System.out.print(currentCourses.values().toArray()[i]+",");
 		for(int i=0;i<studentList.size();i++) {
-			if(currentCourses.containsKey(studentList.get(i).getCourse())) {
+			if(currentCourses.containsKey(studentList.get(i).getCourse())&&studentList.get(i).getPort()==basePort+1) {				
 				studentList.get(i).updatePort(currentCourses.get(studentList.get(i).getCourse()).intValue());
-				System.out.println("found a class");
-			
+				
 			//else set the student to default port (basePort+1)
-			}else
+			}else if(studentList.get(i).getPort()!=basePort+1)
 				studentList.get(i).updatePort(basePort+1);
 			changed++;
 		}
@@ -202,12 +212,16 @@ public class ServerMain {
 		if(database) {
 			System.out.println("Getting "+student.getUser()+"'s classes");
 			try {
-				ResultSet courses = retrieve("Select course.crn from course join student_courses" + 
-					" where course.crn=student_courses.crn and student_courses.student_id='"+student.getUser()+"';");
-				while(courses.next()) {
-					System.out.println(courses.getInt(1));
-					student.setCourse(courses.getInt(1));	
-				}
+				ResultSet courses = retrieve("SELECT course.crn, course.endTime - CURRENT_TIME() AS timeDiff " + 
+												"FROM course " + 
+												"JOIN student_courses " +
+												"ON course.crn=student_courses.crn " +
+												"WHERE student_courses.student_id='"+student.getUser()+"' AND course.endTime - CURRENT_TIME() > 0 " + 
+												"ORDER BY timeDiff DESC;");
+				courses.next();
+				System.out.println(courses.getInt(1));
+				student.setCourse(courses.getInt(1));	
+				
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}

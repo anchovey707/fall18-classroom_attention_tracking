@@ -6,7 +6,7 @@ import java.net.Socket;
 
 public class ClientConnection extends Thread{
 	private String username;
-	private int course=82325,port=61600;
+	private int course=0,port=61600;
 	private boolean ready=false,isTeacher=false;
 	//timing and heartbeat
 	private int TCPTiming=500,heartbeatMax=5,heartbeat=heartbeatMax;

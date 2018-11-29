@@ -8,7 +8,6 @@ namespace TeacherGUI
 {
     public class databaseController
     {
-        //probably need to pull this ip from a external config file thats eaasy to change
         public static String databaseIP = ConfigurationManager.AppSettings["IP"].ToString();
         public static String databaseUser = "teacher";
         public static String databasePass = "course";
@@ -17,8 +16,8 @@ namespace TeacherGUI
         public static String sqlQuery;
         public static MySqlConnection conn = new MySql.Data.MySqlClient.MySqlConnection();
    
-        private bool admin = false;
-        private string id = "";
+        private static bool admin = false;
+        private static string id = "";
         public static void dbConnect()
         {
             string myConnectionString;
@@ -39,13 +38,12 @@ namespace TeacherGUI
         //I put methods here to clean up the login form
         public databaseController(){
             dbConnect();}
-        
-        public bool login(string user,string pass,bool hash) {
+        public static bool login(string user,string pass,bool hash) {
             if(hash)
                 pass = Hash.passwordHash(pass);
             Console.WriteLine(pass);
             try {
-                MySqlDataReader reader = new MySqlCommand("SELECT * FROM teacher WHERE login_id = '" + user + "' and pass = '" + pass + "';", databaseController.conn).ExecuteReader();
+                MySqlDataReader reader = new MySqlCommand("SELECT * FROM teacher WHERE login_id = '" + user + "' and pass = '" + pass + "';",conn).ExecuteReader();
                 if (reader.HasRows) {
                     reader.Read();
                     admin = reader.GetBoolean("administrator");
@@ -55,34 +53,50 @@ namespace TeacherGUI
                     return true;
                 } else {
                     reader.Close();
-                    return false;
                 }
             }catch(Exception e) {
-                return false;
+                Console.WriteLine(e.StackTrace);
             }
+            return false;
         }
         public bool login(string user, string pass){
             return login(user, pass, true);
         }
-
-        public string[] getClasses(){
+        public static string[] getClasses(){
             List<string> classlist = new List<string>();
             try {
-                MySqlDataReader reader = new MySqlCommand("SELECT crn FROM course WHERE teacher_id = '" + id + "';", databaseController.conn).ExecuteReader();
+                MySqlDataReader reader = new MySqlCommand("SELECT crn FROM course WHERE teacher_id = '" + id + "';", conn).ExecuteReader();
                 while (reader.Read()) {
                     classlist.Add(reader.GetString("crn"));
                 }
                 reader.Close();
-                return classlist.ToArray();
             } catch (Exception e) {
                 classlist.Add("82325");
             }
             return classlist.ToArray();
         }
 
-        public bool isAdmin(){
+        public static bool isAdmin(){
             return admin;
         }
+
+        public static string getFullName(string username) {
+            List<string> classlist = new List<string>();
+            string name = "~N/A";
+            try {
+                Console.WriteLine("SELECT first_name,last_name FROM student WHERE login_id = '" + username + "';");
+                MySqlDataReader reader = new MySqlCommand("SELECT first_name,last_name FROM student WHERE login_id = '" + username + "';",conn).ExecuteReader();
+                while (reader.Read()) {
+                   name=reader.GetString("first_name");
+                   name+=" "+ reader.GetString("last_name");
+                }
+                reader.Close();
+            } catch (Exception e) {
+                Console.WriteLine(e.StackTrace);
+            }
+            return name;
+        }
+
     }
 }
 

@@ -8,43 +8,18 @@ namespace TeacherGUI
 
     public partial class Login_Screen : Form
     {
-        databaseController DB = new databaseController();
         public Login_Screen()
         {
             InitializeComponent();
+            databaseController.dbConnect();
         }
 
         //loginButton
         private void button1_Click(object sender, EventArgs e)
         {
             
-
-            /*
-                databaseController.sqlQuery = "SELECT * FROM teacher WHERE login_id = @username && pass = @pass;";
-            MySqlCommand cmd = new MySqlCommand(databaseController.sqlQuery, databaseController.conn);
-            string passwordHash = passwordTextBox.Text;
-            //string passwordHash = Hash.passwordHash(passwordTextBox.Text);
-            //cmd.Parameters.AddWithValue("@username", );
-            //cmd.Parameters.AddWithValue("@pass", );
-            databaseController.login(usernameTextBox.Text, passwordHash);
-            MySqlDataReader reader = cmd.ExecuteReader();
-
-            if (reader.HasRows)
-            {
-                reader.Read();
-                bool admin = reader.GetBoolean("administrator");
-                string id = reader.GetString(1);
-                Console.WriteLine(id);
-                cmd = new MySqlCommand("Select * from course where teacher_id=" + id + ";", databaseController.conn);
-                reader = cmd.ExecuteReader();
-
-                new TeacherHome(admin, classes).Show();
-                databaseController.conn.Close();
-                this.Hide();
-            }*/
-            
-            if (DB.login(usernameTextBox.Text, passwordTextBox.Text,false)) {
-                new TeacherHome(DB.isAdmin(), DB.getClasses()).Show();
+            if (databaseController.login(usernameTextBox.Text, passwordTextBox.Text,false)) {
+                new TeacherHome(databaseController.isAdmin(), databaseController.getClasses()).Show();
                 databaseController.conn.Close();
                 this.Hide();
             }else{
@@ -71,15 +46,7 @@ namespace TeacherGUI
 
             this.AcceptButton = button1;
         }
-
-
-        //adminButton
-        private void button2_Click(object sender, EventArgs e)
-        {
-            new AdminScreen(this).Show();
-            Hide();
-        }
-
+        
         //Username
         protected void username_SetText()
         {

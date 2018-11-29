@@ -21,7 +21,7 @@ public class ServerUDP implements Runnable{
 	private boolean run=true,database=true;
 	private int crn;
 	private InetAddress ip;
-	
+	//private String[] names=new String[] {"Anthony","Austin","Joe","Bob"};
 	//Get the crn,the target IP(teacher),a datagramSocket, and a DB Connection
 	public ServerUDP(int course,InetAddress i,DatagramSocket d,Connection conn) {
 		ip=i;
@@ -82,7 +82,7 @@ public class ServerUDP implements Runnable{
 						state.execute("Insert into trackingdata values("+crn+",'"+user+"',"+posX+","+posY+",'"+app+"','"+time+"');");
 					} catch (SQLException e) {
 						System.out.println("database insert failed Failed");
-						e.printStackTrace();
+						//e.printStackTrace();
 						
 					}
 				
@@ -94,8 +94,9 @@ public class ServerUDP implements Runnable{
 			}
 			
 		}
+		System.out.println("\t\tclosed the socket/port on"+streamSocket.getLocalPort());
 		streamSocket.close();
-		System.out.println("closed the socket/port on"+streamSocket.getPort());
+		
 	}
 
 	

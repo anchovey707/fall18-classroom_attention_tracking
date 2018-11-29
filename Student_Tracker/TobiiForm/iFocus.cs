@@ -13,6 +13,7 @@ using System.IO;
 using Newtonsoft.Json;
 using System.Collections;
 using NLog;
+using System.Configuration;
 
 namespace TobiiForm
 {
@@ -33,7 +34,7 @@ namespace TobiiForm
         //Avoid hardcoding screen dimensions - Needed as tobii returns values 0-1 x,y
         Int32 screenWidth = Screen.PrimaryScreen.Bounds.Width;
         Int32 screenHeight = Screen.PrimaryScreen.Bounds.Height;
-        int eyeTrackerWaitMax = 35,eyeTrackerWait=0;
+        int eyeTrackerWaitMax = int.Parse(ConfigurationManager.AppSettings["TrackerWait"].ToString());int eyeTrackerWait=0;
 
         ServerConnection server;
     
@@ -52,13 +53,14 @@ namespace TobiiForm
             eyeTrackers = EyeTrackingOperations.FindAllEyeTrackers();
             if (eyeTrackers.Count == 0)
             {
+                Console.WriteLine("Eye tracker failed");
                 TobiiEyeTrackerProcess.Close();
                 Environment.Exit(-1);
             }
             
         }
         
-
+        //GAze data event handler, gets the XY,app and time, then sends it to the server
         private void EyeTracker_GazeDataReceived(object sender, GazeDataEventArgs e) {
             if (eyeTrackerWait++ > eyeTrackerWaitMax) {
                 // Left eye coordinates multiplied by computer width and height

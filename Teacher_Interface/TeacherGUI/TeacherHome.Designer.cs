@@ -62,7 +62,7 @@
             this.CurrentClass.Location = new System.Drawing.Point(89, 125);
             this.CurrentClass.Name = "CurrentClass";
             this.CurrentClass.Size = new System.Drawing.Size(82, 23);
-            this.CurrentClass.TabIndex = 4;
+            this.CurrentClass.TabIndex = 2;
             this.CurrentClass.Text = "Stream Class";
             this.CurrentClass.UseVisualStyleBackColor = true;
             this.CurrentClass.Click += new System.EventHandler(this.CurrentClass_Click);
@@ -82,7 +82,17 @@
             this.selectedClass.Location = new System.Drawing.Point(144, 86);
             this.selectedClass.Name = "selectedClass";
             this.selectedClass.Size = new System.Drawing.Size(121, 21);
-            this.selectedClass.TabIndex = 7;
+            this.selectedClass.TabIndex = 1;
+            // 
+            // adminbtn
+            // 
+            this.adminbtn.Location = new System.Drawing.Point(131, 163);
+            this.adminbtn.Name = "adminbtn";
+            this.adminbtn.Size = new System.Drawing.Size(75, 23);
+            this.adminbtn.TabIndex = 5;
+            this.adminbtn.Text = "Admin";
+            this.adminbtn.UseVisualStyleBackColor = true;
+            this.adminbtn.Click += new System.EventHandler(this.adminbtn_Click);
             // 
             // adminbtn
             // 

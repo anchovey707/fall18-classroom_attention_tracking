@@ -17,12 +17,13 @@ namespace TeacherGUI
         public Socket tcpSocket,udpSocket;
         byte[] outStream;
         byte[] inStream;
-        
+        List<Student> classList=new List<Student>();
         Form teacherHome;
-        Thread tcpThread,udpThread;
+        Thread tcpThread,udpThread,mapThread;
+        Bitmap bMap;
 
         List<String> students = new List<String>();
-        
+        bool editClassSync = false;
         public Form1(Form f,int course)
         {
             teacherHome = f;
@@ -36,14 +37,13 @@ namespace TeacherGUI
 
                 Console.WriteLine("trying to connect");
                 tcpSocket.Connect(databaseController.databaseIP, int.Parse(ConfigurationManager.AppSettings["PORT"].ToString()));
-
-               Console.WriteLine("waiting for starting char");
+                tcpSocket.ReceiveTimeout = 2000;
+                Console.WriteLine("waiting for starting char");
                 String returndata="";
-
-
+                
                 //Wait for the start char, ';'
                 while (returndata != ";") {
-                    inStream=new byte[tcpSocket.Available];
+                    inStream = new byte[tcpSocket.Available];
                     tcpSocket.Receive(inStream);
                     returndata = Encoding.ASCII.GetString(inStream);
                 }
@@ -68,10 +68,13 @@ namespace TeacherGUI
                 udpSocket.Bind(new IPEndPoint(IPAddress.Any,int.Parse(returndata)));
                 udpThread = new Thread(ListenForPackets);udpThread.Start();
                 tcpThread = new Thread(heartBeat);tcpThread.Start();
+                mapThread = new Thread(UpdateMap);mapThread.Start();
             }
             catch (Exception e){
-                please.Text = e.StackTrace;
+                
                 Console.WriteLine(e.StackTrace);
+                this.Close();
+                return;
             }
 
 
@@ -81,23 +84,7 @@ namespace TeacherGUI
 
 
             // Create new memory bitmap the same size as the picture box
-            Bitmap bMap = new Bitmap(pictureBox1.Width, pictureBox1.Height);
-            // Initialize random number generator
-            Random rRand = new Random();
-            // Loop variables
-            int iX;
-            int iY;
-            byte iIntense;
-            // Lets loop 500 times and create a random point each iteration
-            for (int i = 0; i < 500; i++)
-            {
-                // Pick random locations and intensity
-                iX = rRand.Next(0, 200);
-                iY = rRand.Next(0, 200);
-                iIntense = (byte)rRand.Next(0, 120);
-                // Add heat point to heat points list
-                HeatPoints.Add(new HeatPoint(iX, iY, iIntense));
-            }
+            bMap = new Bitmap(pictureBox1.Width, pictureBox1.Height);
             // Call CreateIntensityMask, give it the memory bitmap, and use it's output to set the picture box image
             pictureBox1.Image = CreateIntensityMask(bMap, HeatPoints);
 
@@ -113,20 +100,6 @@ namespace TeacherGUI
 
             // Display grid lines.
            // listView2.GridLines = true;
-
-            // Create three items and three sets of subitems for each item.
-            /*ListViewItem item1 = new ListViewItem("Austin Lambeth",0);
-            item1.SubItems.Add("al05661");
-            item1.SubItems.Add("Current Slides");
-            item1.SubItems.Add("3");
-            ListViewItem item2 = new ListViewItem("Dylan Albrecht", 1);
-            item2.SubItems.Add("fagot.net");
-            item2.SubItems.Add("something he shouldn't have open");
-            item2.SubItems.Add("6");
-            ListViewItem item3 = new ListViewItem("Phillip", 1);
-            item3.SubItems.Add("cool guy philip");
-            item3.SubItems.Add("Current Slides");
-            item3.SubItems.Add("9");*/
             
             // Create columns for the items and subitems.
             // Width of -2 indicates auto-size.
@@ -145,6 +118,24 @@ namespace TeacherGUI
 
 
         }
+
+        public void UpdateMap() {
+            while (true)
+            {
+                Thread.Sleep(200);
+                Console.WriteLine("Map");
+                //HeatPoints.Clear();
+                bMap = new Bitmap(pictureBox1.Width, pictureBox1.Height);
+                foreach (Student student in classList) {
+                    if (editClassSync)
+                        break;
+                    HeatPoints.Add(student.StHeatPoint);
+                }
+                pictureBox1.Image = CreateIntensityMask(bMap, HeatPoints);
+                
+            }
+        }
+
 
 
         public void ListenForPackets()
@@ -181,33 +172,76 @@ namespace TeacherGUI
                     else
                         app = "";
                     if (!students.Contains(name)){
-                        addStudent(name);
+                        if (listView1.InvokeRequired) {
+                            editClassSync = true;
+                            addStudent(name);
+                        }
                     } else {
-                        //update student info
-                        if(!app.Equals(""))
-                            updateStudentApp(name,app);
+                        updateStudentApp(name,app);
                     }
+                    HeatPoint newHeat = new HeatPoint(int.Parse(posX), int.Parse(posY), byte.MaxValue );
+                    Console.WriteLine(newHeat.X + " ;" + newHeat.Y);
+                    for(int i= 0; i < classList.Count; i++)
+                    {
+                        if (classList[i].getName()==name)
+                        {
+                            classList[i].setHP(newHeat);
+                            Console.WriteLine(newHeat.X);
+                            Console.WriteLine(classList[i].getName());
+                            Console.WriteLine(classList[0].getName());
+
+                            Console.WriteLine(classList[0].getHP().X);
+                            Console.WriteLine(classList[i].getHP().X);
+                            Console.WriteLine(classList.ToString());
+                        }
+                    }
+                        
                 }
             }
         }
 
         public void addStudent(string name) {
-            if (listView1.InvokeRequired) {
-                Invoke((MethodInvoker)delegate { this.addStudent(name); });
-            } else {
+            Console.WriteLine(listView1.InvokeRequired);
+            if (listView1.InvokeRequired)
+            {
+                Invoke((MethodInvoker)delegate { Console.WriteLine("Invoke Required!!!!!!!!!!!!!!!!!!!!!!!!!1"); this.addStudent(name); });
+            }
+            else
+            {
                 students.Add(name);
                 Console.WriteLine("Added " + name + " to the class");
-                ListViewItem item = new ListViewItem("student name");
+                ListViewItem item = new ListViewItem(databaseController.getFullName(name));
                 item.SubItems.Add(name);
                 item.SubItems.Add("");
                 listView1.Items.Add(item);
+                classList.Add(new Student(name));
+                editClassSync = false;
+            }
+        }
+        
+        public void addStudentOld(string name)
+        {
+            Console.WriteLine(listView1.InvokeRequired);
+            if (listView1.InvokeRequired)
+            {
+                Invoke((MethodInvoker)delegate { Console.WriteLine("Invoke Required!!!!!!!!!!!!!!!!!!!!!!!!!1"); this.addStudent(name); });
+            }
+            else
+            {
+                students.Add(name);
+                Console.WriteLine("Added " + name + " to the class");
+                ListViewItem item = new ListViewItem(databaseController.getFullName(name));
+                item.SubItems.Add(name);
+                item.SubItems.Add("");
+                listView1.Items.Add(item);
+                classList.Add(new Student(name));
             }
         }
         public void updateStudentApp(string name,string app) {
             if (listView1.InvokeRequired) {
                 Invoke((MethodInvoker)delegate { this.updateStudentApp(name,app); });
             } else {
-                listView1.Items[3 + students.IndexOf(name)].SubItems[2].Text = app;
+                listView1.Items[students.IndexOf(name)].SubItems[2].Text = app;
                 
             }
 
@@ -217,10 +251,23 @@ namespace TeacherGUI
         public void heartBeat() {
             while (true) {
                 Thread.Sleep(1000);
-                tcpSocket.Send(new byte[] { 0 });
+                try {
+                    tcpSocket.Send(new byte[] { 0 });
+                }catch(Exception e) {
+                    invokeClose();
+                }
             }
         }
 
+
+        private void invokeClose() {
+            if (this.InvokeRequired) {
+                Invoke((MethodInvoker)delegate { this.invokeClose(); });
+            } else {
+                this.Close();
+
+            }
+        }
         
 
         private void button1_Click(object sender, EventArgs e){
@@ -230,55 +277,14 @@ namespace TeacherGUI
             //need to stop thread as well
             tcpThread.Abort();
             udpThread.Abort();
+            mapThread.Abort();
             tcpSocket.Close();
             udpSocket.Close();
             teacherHome.Show();
+            
         }
         private List<HeatPoint> HeatPoints = new List<HeatPoint>();
-        
-        private void button2_Click(object sender, EventArgs e)
-        {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            /*
-            // Create new memory bitmap the same size as the picture box
-            Bitmap bMap = new Bitmap(pictureBox1.Width, pictureBox1.Height);
-            // Initialize random number generator
-            Random rRand = new Random();
-            // Loop variables
-            int iX;
-            int iY;
-            byte iIntense;
-            // Lets loop 500 times and create a random point each iteration
-            for (int i = 0; i < 500; i++)
-            {
-                // Pick random locations and intensity
-                iX = rRand.Next(0, 200);
-                iY = rRand.Next(0, 200);
-                iIntense = (byte)rRand.Next(0, 120);
-                // Add heat point to heat points list
-                HeatPoints.Add(new HeatPoint(iX, iY, iIntense));
-            }
-            // Call CreateIntensityMask, give it the memory bitmap, and use it's output to set the picture box image
-            pictureBox1.Image = CreateIntensityMask(bMap, HeatPoints);
-            */
-        }
+       
         private Bitmap CreateIntensityMask(Bitmap bSurface, List<HeatPoint> aHeatPoints)
         {
             // Create new graphics surface from memory bitmap
@@ -286,10 +292,20 @@ namespace TeacherGUI
             // Set background color to white so that pixels can be correctly colorized
             DrawSurface.Clear(Color.White);
             // Traverse heat point data and draw masks for each heat point
-            foreach (HeatPoint DataPoint in aHeatPoints)
+            try
             {
-                // Render current heat point on draw surface
-                DrawHeatPoint(DrawSurface, DataPoint, 15);
+                foreach (Student student in classList)
+                {
+                    // Render current heat point on draw surface
+                    Console.WriteLine("Im in the create map");
+                    Console.WriteLine(student.getHP().X);
+                    Console.WriteLine(student.getHP().Y);
+                    DrawHeatPoint(DrawSurface, student.getHP(), 25);
+                }
+            }
+            catch(Exception e)
+            {
+
             }
             return bSurface;
         }
@@ -369,5 +385,30 @@ namespace TeacherGUI
             Intensity = bIntensity;
         }
     }
+    public class Student
+    {
+        public HeatPoint StHeatPoint;
+        public String name;
+        public Student(String name1)
+        {
+            this.name = name1;
+            StHeatPoint = new HeatPoint();
+        }
+        public String getName()
+        {
+            return this.name;
+        }
+        public void setHP(HeatPoint heat)
+        {
+            Console.WriteLine(heat.X);
+            this.StHeatPoint = heat;
+            Console.WriteLine(this.StHeatPoint.X);
+        }
+        public HeatPoint getHP()
+        {
+            return this.StHeatPoint;
+        }
+    }
+
 }
 
