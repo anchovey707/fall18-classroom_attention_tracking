@@ -24,9 +24,10 @@ public class ClientConnection extends Thread{
 	public ClientConnection(Socket s, int triesToConnect){
 		//Setting up the socket
 		socket=s;
-		s.setSoTimeout(10000);
-		ip=s.getInetAddress();
+		
 		try {
+			s.setSoTimeout(10000);
+			ip=s.getInetAddress();
 			inputStream=new DataInputStream(s.getInputStream());
 			int tries=0;
 			//trying to get info
