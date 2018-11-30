@@ -8,75 +8,77 @@ using MySql.Data.MySqlClient;
 namespace TeacherGUI
 {
     public partial class AdminScreen : Form{
-        public Form parentForm;
+        public TeacherHome parentForm;
         public AdminScreen(Form home)
         {
-            parentForm=home;
+            parentForm=(TeacherHome)home;
             InitializeComponent();
             EndTimePicker.Format=DateTimePickerFormat.Time;
             StartTimePicker.Format = DateTimePickerFormat.Time;
-            databaseController.dbConnect();
+            //databaseController.dbConnect();
         }
 
         //Add teacher to database
-        private void SubmitProfessor_Click(object sender, EventArgs e)
-        {
-            databaseController.sqlQuery = "INSERT INTO teacher (login_id, pass, first_name, last_name) " +
-                                          "VALUES (@login, @pass, @firstName, @lastName)";
-            MySqlCommand cmd = new MySqlCommand(databaseController.sqlQuery, databaseController.conn);
+        private void SubmitProfessor_Click(object sender, EventArgs e) {
+            if (!(LoginTxtBox.Text == "Username" || password.Text == "Password" ||firstName.Text == "First Name" || lastName.Text == "Last Name")) { 
+                databaseController.sqlQuery = "INSERT INTO teacher (login_id, pass, first_name, last_name) " +
+                                              "VALUES (@login, @pass, @firstName, @lastName)";
+                MySqlCommand cmd = new MySqlCommand(databaseController.sqlQuery, databaseController.conn);
 
-            string passwordHash = Hash.passwordHash(password.Text);
+                string passwordHash = Hash.passwordHash(password.Text);
 
-            cmd.Parameters.AddWithValue("@login", LoginTxtBox.Text);
-            cmd.Parameters.AddWithValue("@pass", passwordHash);
-            cmd.Parameters.AddWithValue("@firstName", firstName.Text);
-            cmd.Parameters.AddWithValue("@lastName", lastName.Text);
+                cmd.Parameters.AddWithValue("@login", LoginTxtBox.Text);
+                cmd.Parameters.AddWithValue("@pass", passwordHash);
+                cmd.Parameters.AddWithValue("@firstName", firstName.Text);
+                cmd.Parameters.AddWithValue("@lastName", lastName.Text);
 
-            if (cmd.ExecuteNonQuery() > 0)
-            {
-                MessageBox.Show("Professor Added");
-                updateTeachers();
-            }
-            else
-            {
+                try {
+                    if (cmd.ExecuteNonQuery() > 0) {
+                        MessageBox.Show("Professor Added");
+                        updateTeachers();
+                    } else {
+                        MessageBox.Show("Submission failed, please ensure you entered all data and try again.");
+                    }
+                } catch (Exception ee) {
+                    MessageBox.Show("Submission failed, please ensure you entered all data and try again.");
+
+                }
+            }else
                 MessageBox.Show("Submission failed, please ensure you entered all data and try again.");
-            }
         }
 
         //Add calss to database
         private void SubmitClass_Click(object sender, EventArgs e)
         {
-            
-            //databaseController.dbConnect();
-            databaseController.sqlQuery = "INSERT INTO course (crn, teacher_id, name, startTime, endTime) " +
-                                          "VALUES (@crn, @teacher_id, @name, @startTime, @endTime);";
-            MySqlCommand cmd = new MySqlCommand(databaseController.sqlQuery, databaseController.conn);
-            string starttime = StartTimePicker.Value.Hour + ":" + StartTimePicker.Value.Minute + ":" + StartTimePicker.Value.Second;
-            string endtime = EndTimePicker.Value.Hour + ":" + EndTimePicker.Value.Minute + ":" + EndTimePicker.Value.Second;
-            if (StartTimePicker.Value.Hour < 10)
-                starttime = "0" + starttime;
-            if (EndTimePicker.Value.Hour < 10)
-                endtime = "0" + endtime;
-            cmd.Parameters.AddWithValue("@crn", CRNTxtBox.Text);
-            cmd.Parameters.AddWithValue("@teacher_id", TeacherListBox.SelectedValue);
-            cmd.Parameters.AddWithValue("@name", CourseNameTextBox.Text);
-            cmd.Parameters.AddWithValue("@startTime",starttime);
-            cmd.Parameters.AddWithValue("@endTime",endtime );
-            
-            cmd.CommandText= "INSERT INTO course (crn, teacher_id, name, startTime, endTime) " +
-                                          "VALUES ("+ CRNTxtBox.Text + ", '"+ TeacherListBox.SelectedValue+"',' "
-                                          +CourseNameTextBox.Text+"','"+starttime + "', '"+endtime+"');";
-            Console.WriteLine(cmd.CommandText);
-            if (cmd.ExecuteNonQuery() > 0)
-            {
-                MessageBox.Show("Class Added");
-                updateClasses();
-            }
-            else
-            {
-                MessageBox.Show("Submission failed, please ensure you entered all data and try again.");
-            }
+            if (!(CRNTxtBox.Text == "CRN" || CourseNameTextBox.Text == "Name")) {
+                //databaseController.dbConnect();
+                databaseController.sqlQuery = "INSERT INTO course (crn, teacher_id, name, startTime, endTime) " +
+                                              "VALUES (@crn, @teacher_id, @name, @startTime, @endTime);";
+                MySqlCommand cmd = new MySqlCommand(databaseController.sqlQuery, databaseController.conn);
+                string starttime = StartTimePicker.Value.Hour + ":" + StartTimePicker.Value.Minute + ":" + StartTimePicker.Value.Second;
+                string endtime = EndTimePicker.Value.Hour + ":" + EndTimePicker.Value.Minute + ":" + EndTimePicker.Value.Second;
+                if (StartTimePicker.Value.Hour < 10)
+                    starttime = "0" + starttime;
+                if (EndTimePicker.Value.Hour < 10)
+                    endtime = "0" + endtime;
+                cmd.Parameters.AddWithValue("@crn", CRNTxtBox.Text);
+                cmd.Parameters.AddWithValue("@teacher_id", TeacherListBox.SelectedValue);
+                cmd.Parameters.AddWithValue("@name", CourseNameTextBox.Text);
+                cmd.Parameters.AddWithValue("@startTime", starttime);
+                cmd.Parameters.AddWithValue("@endTime", endtime);
 
+                cmd.CommandText = "INSERT INTO course (crn, teacher_id, name, startTime, endTime) " +
+                                              "VALUES (" + CRNTxtBox.Text + ", '" + TeacherListBox.SelectedValue + "',' "
+                                              + CourseNameTextBox.Text + "','" + starttime + "', '" + endtime + "');";
+                Console.WriteLine(cmd.CommandText);
+                if (cmd.ExecuteNonQuery() > 0) {
+                    MessageBox.Show("Class Added");
+                    updateClasses();
+                } else {
+                    MessageBox.Show("Submission failed, please ensure you entered all data and try again.");
+                }
+            } else
+                MessageBox.Show("Submission failed, please ensure you entered all data and try again.");
         }
 
         //on load
@@ -118,6 +120,7 @@ namespace TeacherGUI
         }
 
         public void updateTeachers() {
+
             //populate professor dataGridView
             databaseController.sqlQuery = "SELECT CONCAT(t.first_name, ' ', t.last_name) AS 'Professor', " +
                                                   "login_id" +
@@ -278,7 +281,6 @@ namespace TeacherGUI
         }
 
         private void AdminScreen_FormClosing(object sender, FormClosingEventArgs e) {
-            databaseController.conn.Close();
             parentForm.Show();
         }
     }

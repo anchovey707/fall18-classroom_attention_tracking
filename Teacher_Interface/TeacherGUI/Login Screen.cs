@@ -20,11 +20,9 @@ namespace TeacherGUI
             
             if (databaseController.login(usernameTextBox.Text, passwordTextBox.Text,false)) {
                 new TeacherHome(databaseController.isAdmin(), databaseController.getClasses()).Show();
-                databaseController.conn.Close();
                 this.Hide();
             }else{
                 MessageBox.Show("Either your username or password was incorrect. Please try again.");
-                //databaseController.conn.Close();
             }
             
             

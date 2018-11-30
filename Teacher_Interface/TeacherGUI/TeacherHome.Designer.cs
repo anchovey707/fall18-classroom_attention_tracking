@@ -86,16 +86,6 @@
             // 
             // adminbtn
             // 
-            this.adminbtn.Location = new System.Drawing.Point(131, 163);
-            this.adminbtn.Name = "adminbtn";
-            this.adminbtn.Size = new System.Drawing.Size(75, 23);
-            this.adminbtn.TabIndex = 5;
-            this.adminbtn.Text = "Admin";
-            this.adminbtn.UseVisualStyleBackColor = true;
-            this.adminbtn.Click += new System.EventHandler(this.adminbtn_Click);
-            // 
-            // adminbtn
-            // 
             this.adminbtn.Location = new System.Drawing.Point(135, 179);
             this.adminbtn.Name = "adminbtn";
             this.adminbtn.Size = new System.Drawing.Size(75, 23);

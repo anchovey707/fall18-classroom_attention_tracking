@@ -34,7 +34,7 @@ namespace TobiiForm
             Init();
             InitializeComponent();
             //Hide the form as we no longer need the grading scale from the previous project
-            this.Hide();
+            
         }
    
         private void Init() {
@@ -49,7 +49,7 @@ namespace TobiiForm
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            this.Show();
+            //this.Show();
             Debug.WriteLine("Form loaded");
             //this.WindowState = FormWindowState.Minimized;
         }
