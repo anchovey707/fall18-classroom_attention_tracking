@@ -183,13 +183,13 @@ public class ServerMain {
 			//System.out.print(currentCourses.values().toArray()[i]+",");
 		//Seeing if the student's current class exist in the current list
 		for(int i=0;i<studentList.size();i++) {
+			updateCourse(studentList.get(i));
 			if(currentCourses.containsKey(studentList.get(i).getCourse())&&studentList.get(i).getPort()==basePort+1) {				
 				studentList.get(i).updatePort(currentCourses.get(studentList.get(i).getCourse()).intValue());
 				
 			//else set the student to default port (basePort+1)
 			}else if(studentList.get(i).getPort()!=basePort+1) {
 				studentList.get(i).updatePort(basePort+1);
-				updateStudent(studentList.get(i));
 			}
 			changed++;
 		}
