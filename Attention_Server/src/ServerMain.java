@@ -187,8 +187,10 @@ public class ServerMain {
 				studentList.get(i).updatePort(currentCourses.get(studentList.get(i).getCourse()).intValue());
 				
 			//else set the student to default port (basePort+1)
-			}else if(studentList.get(i).getPort()!=basePort+1)
+			}else if(studentList.get(i).getPort()!=basePort+1) {
 				studentList.get(i).updatePort(basePort+1);
+				updateStudent(studentList.get(i));
+			}
 			changed++;
 		}
 		return changed;
@@ -219,11 +221,13 @@ public class ServerMain {
 												"JOIN student_courses " +
 												"ON course.crn=student_courses.crn " +
 												"WHERE student_courses.student_id='"+student.getUser()+"' AND course.endTime - CURRENT_TIME() > 0 " + 
-												"ORDER BY timeDiff DESC;");
-				courses.next();
-				System.out.println(courses.getInt(1));
-				student.setCourse(courses.getInt(1));	
-				
+												"ORDER BY timeDiff ASC;");
+				while(courses.next()) {
+					System.out.println(courses.getInt(1));
+					student.setCourse(courses.getInt(1));	
+					break;
+				}
+
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
