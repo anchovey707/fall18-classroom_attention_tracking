@@ -32,10 +32,10 @@ namespace TobiiForm
         Process tobiiEyeTrackerProcess;
         static  JsonObject jSonPointDataObject;
         //Avoid hardcoding screen dimensions - Needed as tobii returns values 0-1 x,y
-        Int32 screenWidth = Screen.PrimaryScreen.Bounds.Width;
-        Int32 screenHeight = Screen.PrimaryScreen.Bounds.Height;
+        int screenWidth = Screen.PrimaryScreen.Bounds.Width;
+        int screenHeight = Screen.PrimaryScreen.Bounds.Height;
         int eyeTrackerWaitMax = int.Parse(ConfigurationManager.AppSettings["TrackerWait"].ToString());int eyeTrackerWait=0;
-
+ 
         ServerConnection server;
     
         //Constructor
@@ -45,6 +45,7 @@ namespace TobiiForm
             tracker = eyeTrackers[0];
             this.server = server;
             this.tracker.GazeDataReceived += EyeTracker_GazeDataReceived;
+            Console.WriteLine(screenWidth + " " + screenHeight);
         }
 
         //get 'all' of the eyetrackers (should only be 1) and puts it into array
@@ -65,9 +66,9 @@ namespace TobiiForm
             if (eyeTrackerWait++ > eyeTrackerWaitMax) {
                 // Left eye coordinates multiplied by computer width and height
                 //Remember to change 1680 based on monitor size
-                float x = (e.LeftEye.GazePoint.PositionOnDisplayArea.X) * screenWidth;
+                float x = ((e.LeftEye.GazePoint.PositionOnDisplayArea.X) * 1920);
                 //Remember to change 1050 based on monitor size
-                float y = (e.LeftEye.GazePoint.PositionOnDisplayArea.Y) * screenHeight;
+                float y = ((e.LeftEye.GazePoint.PositionOnDisplayArea.Y) * 1080);
                 String current = "\"" + x.ToString() + ", " + y.ToString() + "\"";
                 Debug.WriteLine("X:" + x.ToString() + ", Y:" + y.ToString() + "\"");
                 // check NaN
@@ -90,8 +91,7 @@ namespace TobiiForm
 
                 }
                 //Multiply by the ratio to a 1920x1080 display
-                x *= 1920/screenWidth;
-                y *= 1080/screenHeight;
+                Debug.WriteLine("X:" + x + ", Y:" + y + "");
                 currentData = "#" + Environment.UserName + "#" + x + "#" + y + "#" 
                     + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + "#" + viewingBrowser + ";";
                 server.SendDataToServer(Encoding.ASCII.GetBytes(currentData));

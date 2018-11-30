@@ -18,7 +18,7 @@ namespace TeacherGUI
     public partial class TeacherHome : Form
     {
         private bool admin = false;
-
+        public int adminForm = 0;
         public TeacherHome(bool a, string[] classes)
         {
             InitializeComponent();
@@ -74,8 +74,12 @@ namespace TeacherGUI
         }
 
         private void adminbtn_Click(object sender, EventArgs e) {
-            new AdminScreen(this).Show();
-            Hide();
+            Console.WriteLine(adminForm);
+            if (adminForm++ == 0) { 
+                new AdminScreen(this).Show();
+                Console.WriteLine("Creating admin page");
+                Hide();
+            }
         }
     }
 }

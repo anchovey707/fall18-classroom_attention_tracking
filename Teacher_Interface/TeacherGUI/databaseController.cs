@@ -90,11 +90,10 @@ namespace TeacherGUI
             List<string> classlist = new List<string>();
             string name = "~N/A";
             try {
-                Console.WriteLine("SELECT first_name,last_name FROM student WHERE login_id = '" + username + "';");
-                MySqlDataReader reader = new MySqlCommand("SELECT first_name,last_name FROM student WHERE login_id = '" + username + "';",conn).ExecuteReader();
+                Console.WriteLine("SELECT CONCAT(first_name,' ',last_name) FROM student WHERE login_id = '" + username + "';");
+                MySqlDataReader reader = new MySqlCommand("SELECT CONCAT(first_name,' ',last_name) as name FROM student WHERE login_id = '" + username + "';",conn).ExecuteReader();
                 while (reader.Read()) {
-                   name=reader.GetString("first_name");
-                   name+=" "+ reader.GetString("last_name");
+                   name=reader.GetString("name");
                 }
                 reader.Close();
             } catch (Exception e) {
