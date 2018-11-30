@@ -18,7 +18,7 @@ namespace TeacherGUI
         private void button1_Click(object sender, EventArgs e)
         {
             
-            if (databaseController.login(usernameTextBox.Text, passwordTextBox.Text,false)) {
+            if (databaseController.login(usernameTextBox.Text, passwordTextBox.Text)) {
                 new TeacherHome(databaseController.isAdmin(), databaseController.getClasses()).Show();
                 this.Hide();
             }else{

@@ -125,12 +125,14 @@ Create user 'teacher'@'%' identified by 'course';
 Grant All ON attentiontracking.* to 'teacher'@'%';
 
 #Test data
-insert into student values('ws01864','Anthony','Shedlowski'),('pf00684','Phillip','Fernandez');
+insert into student values('ws01864','Anthony','Shedlowski'),('pf00684','Phillip','Fernandez'),('Anthony','Anthony','Shedlowski'),('Austin','Austin','Lambeth');
 
-insert into teacher values('aallen','pass','Andrew','Allen',0),('amehdi','pass','Mehdi','Allahyari',0),('admin','pass','Admin','Istrator',1);
+insert into teacher values('aallen','W3IrMH/ObJRJBdEyaR1eSiIUt/6StziSDrP846kEIKGVEcMBCg53ErBU2u9bV7rVnsvZOzKA8hBXj1R/Su1NJQ==','Andrew','Allen',0),
+		('pde','W3IrMH/ObJRJBdEyaR1eSiIUt/6StziSDrP846kEIKGVEcMBCg53ErBU2u9bV7rVnsvZOzKA8hBXj1R/Su1NJQ==','Pradipta','De',0),
+		('admin','W3IrMH/ObJRJBdEyaR1eSiIUt/6StziSDrP846kEIKGVEcMBCg53ErBU2u9bV7rVnsvZOzKA8hBXj1R/Su1NJQ==','Admin','Istrator',1);
 
 insert into course values(82325,'aallen','Software Engineering','15:30:00','16:45:00'),
 						(87055,'aallen','Software Testing and QA','09:05:00','10:20:00'),
-						(85620,'amehdi','Distributed Web Systems Design','14:30:00','15:45:00');
+						(85620,'pde','Computer Architecture','08:00:00','08:50:00');
 
-insert into student_courses values(82325,'ws01864'),(85620,'ws01864'),(82325,'pf00684');
+insert into student_courses values(82325,'Anthony'),(82325,'Austin'),(85620,'Anthony'),(82325,'ws01864'),(85620,'ws01864');

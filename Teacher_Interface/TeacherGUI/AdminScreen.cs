@@ -37,14 +37,14 @@ namespace TeacherGUI
                         MessageBox.Show("Professor Added");
                         updateTeachers();
                     } else {
-                        MessageBox.Show("Submission failed, please ensure you entered all data and try again.");
+                        MessageBox.Show("Submission failed, please ensure you entered all data and try again,\nor that it dosen't already exsit.");
                     }
                 } catch (Exception ee) {
-                    MessageBox.Show("Submission failed, please ensure you entered all data and try again.");
+                    MessageBox.Show("Submission failed, please ensure you entered all data and try again,\nor that it dosen't already exsit.");
 
                 }
-            }else
-                MessageBox.Show("Submission failed, please ensure you entered all data and try again.");
+            } else
+                MessageBox.Show("Submission failed, please ensure you entered all data and try again,\nor that it dosen't already exsit.");
         }
 
         //Add calss to database
@@ -75,10 +75,10 @@ namespace TeacherGUI
                     MessageBox.Show("Class Added");
                     updateClasses();
                 } else {
-                    MessageBox.Show("Submission failed, please ensure you entered all data and try again.");
+                    MessageBox.Show("Submission failed, please ensure you entered all data and try again,\nor that it dosen't already exsit.");
                 }
             } else
-                MessageBox.Show("Submission failed, please ensure you entered all data and try again.");
+                MessageBox.Show("Submission failed, please ensure you entered all data and try again,\nor that it dosen't already exsit.");
         }
 
         //on load

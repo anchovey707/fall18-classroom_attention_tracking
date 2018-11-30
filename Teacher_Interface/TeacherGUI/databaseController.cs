@@ -35,13 +35,14 @@ namespace TeacherGUI
         }
         
         
-        //I put methods here to clean up the login form
+        
         public databaseController(){
             dbConnect();}
+
+        //I put methods here to clean up the forms
         public static bool login(string user,string pass,bool hash) {
             if(hash)
                 pass = Hash.passwordHash(pass);
-            Console.WriteLine(pass);
             try {
                 MySqlDataReader reader = new MySqlCommand("SELECT * FROM teacher WHERE login_id = '" + user + "' and pass = '" + pass + "';",conn).ExecuteReader();
                 if (reader.HasRows) {
@@ -61,7 +62,7 @@ namespace TeacherGUI
         }
         
         //Login with default hashing
-        public bool login(string user, string pass){
+        public static bool login(string user, string pass){
             return login(user, pass, true);
         }
 
